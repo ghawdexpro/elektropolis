@@ -138,7 +138,7 @@ export default function Header() {
             </div>
 
             {/* Center: Navigation */}
-            <nav className="hidden lg:flex items-center gap-1 ml-12">
+            <nav className="hidden lg:flex items-center gap-0.5 ml-10">
               {NAV_CATEGORIES.map((category) => (
                 <div
                   key={category.title}
@@ -179,7 +179,7 @@ export default function Header() {
                           {category.items.map((item) => (
                             <Link
                               key={item.handle}
-                              href={`/collections/${item.handle}`}
+                              href={item.handle.startsWith("/") ? item.handle : `/collections/${item.handle}`}
                               className="block px-2 py-2 text-[14px] text-charcoal hover:text-brand hover:bg-brand-light rounded-md transition-colors"
                               onClick={() => setActiveMenu(null)}
                             >
@@ -187,6 +187,7 @@ export default function Header() {
                             </Link>
                           ))}
                         </div>
+                        {category.title !== "Support" && (
                         <div className="border-t border-border mt-3 pt-3">
                           <Link
                             href="/collections"
@@ -196,6 +197,7 @@ export default function Header() {
                             View all {category.title.toLowerCase()} &rarr;
                           </Link>
                         </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -379,7 +381,7 @@ export default function Header() {
                       {category.items.map((item) => (
                         <Link
                           key={item.handle}
-                          href={`/collections/${item.handle}`}
+                          href={item.handle.startsWith("/") ? item.handle : `/collections/${item.handle}`}
                           className="block py-2 text-[14px] text-muted hover:text-brand transition-colors"
                           onClick={() => setMobileOpen(false)}
                         >

@@ -33,6 +33,11 @@ export const NAV_CATEGORIES = [
     items: [
       { name: "Kitchen Sinks", handle: "kitchen-sinks" },
       { name: "Kitchen Sink Mixers", handle: "sink-mixers" },
+    ],
+  },
+  {
+    title: "Cooking",
+    items: [
       { name: "Chimney Cooker Hoods", handle: "chimney-cooker-hoods" },
       { name: "Canopy Cooker Hoods", handle: "canopy-extractor-hood" },
       { name: "Telescopic Cooker Hoods", handle: "telescopic-extractor-hoods" },
@@ -65,6 +70,14 @@ export const NAV_CATEGORIES = [
       { name: "Air Treatment", handle: "air-treatment" },
       { name: "Water Treatment", handle: "water-treatment" },
       { name: "Floorcare", handle: "floorcare" },
+    ],
+  },
+  {
+    title: "Support",
+    items: [
+      { name: "Contact Us", handle: "/contact" },
+      { name: "FAQs", handle: "/faqs" },
+      { name: "Parts & Repairs", handle: "/contact" },
     ],
   },
 ] as const;

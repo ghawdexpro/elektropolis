@@ -134,39 +134,51 @@ export default async function HomePage() {
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-charcoal noise-texture">
-        <div className="max-w-[1400px] mx-auto px-5 lg:px-8 py-20 md:py-28 lg:py-36 relative z-10">
-          <div className="max-w-2xl">
-            <span className="inline-block text-[11px] uppercase tracking-[0.18em] font-semibold text-brand mb-5 bg-brand/10 px-3 py-1.5 rounded-full">
-              Malta&apos;s Home Appliance Store
-            </span>
-            <h1 className="text-[40px] md:text-[52px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-tight mb-6">
-              Premium Appliances,{" "}
-              <span className="text-brand">Unbeatable</span> Prices
-            </h1>
-            <p className="text-[17px] md:text-[19px] text-white/60 leading-relaxed mb-10 max-w-lg">
-              Top European brands for your kitchen, laundry, and home — delivered free across Malta and Gozo.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/collections"
-                className="inline-flex items-center justify-center gap-2 h-13 px-8 bg-brand hover:bg-brand-hover text-white text-[15px] font-semibold rounded-lg transition-colors"
-              >
-                Shop All Products
-                <ArrowRight className="w-4 h-4" strokeWidth={2} />
-              </Link>
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center h-13 px-8 border border-white/20 text-white text-[15px] font-medium rounded-lg hover:bg-white/5 transition-colors"
-              >
-                Visit Our Showroom
-              </Link>
+      <section className="relative h-[60vh] md:h-[70vh] overflow-hidden">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source
+            src="https://fgikvllfbtetzwkzwxqg.supabase.co/storage/v1/object/public/site-assets/hero-video.mp4"
+            type="video/mp4"
+          />
+        </video>
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 flex items-center">
+          <div className="max-w-[1400px] mx-auto px-5 lg:px-8 w-full">
+            <div className="max-w-2xl">
+              <span className="inline-block text-[11px] uppercase tracking-[0.18em] font-semibold text-brand mb-5 bg-brand/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                Malta&apos;s Home Appliance Store
+              </span>
+              <h1 className="text-[40px] md:text-[52px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-tight mb-6 drop-shadow-lg">
+                Premium Appliances,{" "}
+                <span className="text-brand">Unbeatable</span> Prices
+              </h1>
+              <p className="text-[17px] md:text-[19px] text-white/70 leading-relaxed mb-10 max-w-lg drop-shadow-md">
+                Top European brands for your kitchen, laundry, and home — delivered free across Malta and Gozo.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href="/collections"
+                  className="inline-flex items-center justify-center gap-2 h-13 px-8 bg-brand hover:bg-brand-hover text-white text-[15px] font-semibold rounded-lg transition-colors"
+                >
+                  Shop All Products
+                  <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                </Link>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center justify-center h-13 px-8 border border-white/20 text-white text-[15px] font-medium rounded-lg hover:bg-white/5 backdrop-blur-sm transition-colors"
+                >
+                  Visit Our Showroom
+                </Link>
+              </div>
             </div>
           </div>
         </div>
-        {/* Decorative gradient orb */}
-        <div className="absolute -right-32 top-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-brand/8 blur-[120px] pointer-events-none" />
-        <div className="absolute -left-20 -bottom-20 w-[300px] h-[300px] rounded-full bg-brand/5 blur-[100px] pointer-events-none" />
       </section>
 
       {/* ── On Sale ────────────────────────────────────── */}

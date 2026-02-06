@@ -1,20 +1,47 @@
 import Link from "next/link";
-import { ShoppingCart } from "lucide-react";
+import { Suspense } from "react";
+import { ShoppingCart, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/utils";
+import OrdersFilter from "./OrdersFilter";
 
 export const metadata = { title: "Orders" };
 
-export default async function AdminOrdersPage() {
+interface Props {
+  searchParams: Promise<{
+    q?: string;
+    status?: string;
+    payment?: string;
+  }>;
+}
+
+export default async function AdminOrdersPage({ searchParams }: Props) {
+  const sp = await searchParams;
   const supabase = await createClient();
 
-  const { data: orders, error } = await supabase
+  let query = supabase
     .from("orders")
     .select(
       "id, order_number, customer_email, status, payment_status, total, created_at"
     )
     .order("created_at", { ascending: false })
     .limit(200);
+
+  // Apply filters
+  if (sp.status) {
+    query = query.eq("status", sp.status);
+  }
+  if (sp.payment) {
+    query = query.eq("payment_status", sp.payment);
+  }
+  if (sp.q) {
+    // Search by order number or email
+    query = query.or(
+      `order_number.ilike.%${sp.q}%,customer_email.ilike.%${sp.q}%`
+    );
+  }
+
+  const { data: orders, error } = await query;
 
   return (
     <div className="space-y-6">
@@ -26,6 +53,11 @@ export default async function AdminOrdersPage() {
         </p>
       </div>
 
+      {/* Filters */}
+      <Suspense>
+        <OrdersFilter />
+      </Suspense>
+
       {/* Orders table */}
       <div className="bg-white rounded-xl border border-border overflow-hidden">
         {error ? (
@@ -35,7 +67,11 @@ export default async function AdminOrdersPage() {
         ) : !orders || orders.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <ShoppingCart className="w-12 h-12 text-muted mx-auto mb-3" />
-            <p className="text-muted">No orders yet.</p>
+            <p className="text-muted">
+              {sp.q || sp.status || sp.payment
+                ? "No orders match your filters."
+                : "No orders yet."}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">

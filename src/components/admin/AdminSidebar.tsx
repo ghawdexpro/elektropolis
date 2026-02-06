@@ -8,6 +8,7 @@ import {
   Package,
   ShoppingCart,
   FolderOpen,
+  Users,
   ExternalLink,
   LogOut,
   Menu,
@@ -22,6 +23,7 @@ const navItems = [
   { label: "Products", href: "/admin/products", icon: Package },
   { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { label: "Collections", href: "/admin/collections", icon: FolderOpen },
+  { label: "Customers", href: "/admin/customers", icon: Users },
 ];
 
 export default function AdminSidebar() {

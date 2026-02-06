@@ -6,6 +6,8 @@ import {
   AlertTriangle,
   Plus,
   ExternalLink,
+  CreditCard,
+  Mail,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/utils";
@@ -16,35 +18,54 @@ export default async function AdminDashboard() {
   const supabase = await createClient();
 
   // Fetch stats in parallel
-  const [productsRes, ordersRes, revenueRes, lowStockRes, recentOrdersRes] =
-    await Promise.all([
-      supabase
-        .from("products")
-        .select("id", { count: "exact", head: true }),
-      supabase
-        .from("orders")
-        .select("id", { count: "exact", head: true }),
-      supabase
-        .from("orders")
-        .select("total")
-        .in("payment_status", ["paid", "completed"]),
-      supabase
-        .from("products")
-        .select("id", { count: "exact", head: true })
-        .lte("inventory_count", 5)
-        .gt("inventory_count", -1),
-      supabase
-        .from("orders")
-        .select("id, order_number, customer_email, status, payment_status, total, created_at")
-        .order("created_at", { ascending: false })
-        .limit(10),
-    ]);
+  const [
+    productsRes,
+    ordersRes,
+    revenueRes,
+    lowStockRes,
+    unpaidRes,
+    subscribersRes,
+    recentOrdersRes,
+  ] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true }),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true }),
+    supabase
+      .from("orders")
+      .select("total")
+      .in("payment_status", ["paid", "completed"]),
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .lte("inventory_count", 5)
+      .gt("inventory_count", -1),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("payment_status", "pending"),
+    supabase
+      .from("newsletter_subscribers")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "active"),
+    supabase
+      .from("orders")
+      .select(
+        "id, order_number, customer_email, status, payment_status, total, created_at"
+      )
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
 
   const totalProducts = productsRes.count ?? 0;
   const totalOrders = ordersRes.count ?? 0;
   const totalRevenue =
     revenueRes.data?.reduce((sum, o) => sum + (o.total ?? 0), 0) ?? 0;
   const lowStockCount = lowStockRes.count ?? 0;
+  const unpaidCount = unpaidRes.count ?? 0;
+  const subscriberCount = subscribersRes.count ?? 0;
   const recentOrders = recentOrdersRes.data ?? [];
 
   const stats = [
@@ -70,7 +91,25 @@ export default async function AdminDashboard() {
       label: "Low Stock Items",
       value: lowStockCount.toLocaleString(),
       icon: AlertTriangle,
-      color: lowStockCount > 0 ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50",
+      color:
+        lowStockCount > 0
+          ? "text-red-600 bg-red-50"
+          : "text-green-600 bg-green-50",
+    },
+    {
+      label: "Unpaid Orders",
+      value: unpaidCount.toLocaleString(),
+      icon: CreditCard,
+      color:
+        unpaidCount > 0
+          ? "text-amber-600 bg-amber-50"
+          : "text-green-600 bg-green-50",
+    },
+    {
+      label: "Newsletter Subs",
+      value: subscriberCount.toLocaleString(),
+      icon: Mail,
+      color: "text-purple-600 bg-purple-50",
     },
   ];
 
@@ -104,7 +143,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (

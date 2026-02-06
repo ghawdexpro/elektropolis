@@ -33,6 +33,9 @@ export const NAV_CATEGORIES = [
     items: [
       { name: "Kitchen Sinks", handle: "kitchen-sinks" },
       { name: "Kitchen Sink Mixers", handle: "sink-mixers" },
+      { name: "Chimney Cooker Hoods", handle: "chimney-cooker-hoods" },
+      { name: "Canopy Cooker Hoods", handle: "canopy-extractor-hood" },
+      { name: "Telescopic Cooker Hoods", handle: "telescopic-extractor-hoods" },
     ],
   },
   {
@@ -45,14 +48,6 @@ export const NAV_CATEGORIES = [
     ],
   },
   {
-    title: "Cooking",
-    items: [
-      { name: "Chimney Cooker Hoods", handle: "chimney-cooker-hoods" },
-      { name: "Canopy Cooker Hoods", handle: "canopy-extractor-hood" },
-      { name: "Telescopic Cooker Hoods", handle: "telescopic-extractor-hoods" },
-    ],
-  },
-  {
     title: "Refrigeration",
     items: [
       { name: "Freestanding Fridge Freezers", handle: "freestanding-fridge-freezers" },
@@ -62,6 +57,14 @@ export const NAV_CATEGORIES = [
       { name: "Integrated Fridges", handle: "integrated-fridges" },
       { name: "Integrated Freezers", handle: "integrated-freezers" },
       { name: "Chest Freezers", handle: "chest-freezers" },
+    ],
+  },
+  {
+    title: "Home",
+    items: [
+      { name: "Air Treatment", handle: "air-treatment" },
+      { name: "Water Treatment", handle: "water-treatment" },
+      { name: "Floorcare", handle: "floorcare" },
     ],
   },
 ] as const;

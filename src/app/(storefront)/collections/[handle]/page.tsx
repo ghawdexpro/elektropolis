@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProductGrid from "@/components/storefront/ProductGrid";
+import SortDropdown from "@/components/storefront/SortDropdown";
 
 interface Props {
   params: Promise<{ handle: string }>;
@@ -121,7 +122,9 @@ export default async function CollectionPage({
           </div>
 
           {/* Sort */}
-          <SortDropdown currentSort={sort} handle={handle} />
+          <div className="shrink-0">
+            <SortDropdown currentSort={sort} basePath={`/collections/${handle}`} />
+          </div>
         </div>
       </div>
 
@@ -142,42 +145,5 @@ export default async function CollectionPage({
         </div>
       )}
     </div>
-  );
-}
-
-function SortDropdown({
-  currentSort,
-  handle,
-}: {
-  currentSort?: string;
-  handle: string;
-}) {
-  const options = [
-    { value: "", label: "Alphabetical" },
-    { value: "price-asc", label: "Price: Low to High" },
-    { value: "price-desc", label: "Price: High to Low" },
-    { value: "newest", label: "Newest First" },
-  ];
-
-  return (
-    <form className="shrink-0">
-      <select
-        name="sort"
-        defaultValue={currentSort || ""}
-        className="appearance-none bg-surface border border-border rounded-lg px-4 py-2.5 pr-10 text-[13px] font-medium text-charcoal cursor-pointer focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/20"
-        onChange={(e) => {
-          const url = e.target.value
-            ? `/collections/${handle}?sort=${e.target.value}`
-            : `/collections/${handle}`;
-          window.location.href = url;
-        }}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    </form>
   );
 }

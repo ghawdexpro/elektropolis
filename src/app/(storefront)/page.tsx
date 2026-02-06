@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import ProductCard from "@/components/storefront/ProductCard";
 import {
   ArrowRight,
   Truck,
@@ -76,7 +78,59 @@ const VALUE_PROPS = [
   },
 ];
 
-export default function HomePage() {
+function formatProducts(products: Array<{
+  id: string;
+  title: string;
+  handle: string;
+  vendor: string | null;
+  price: number;
+  compare_at_price: number | null;
+  inventory_count: number;
+  product_images: Array<{ url: string; alt_text: string | null; position: number }> | null;
+}>) {
+  return products.map((p) => ({
+    ...p,
+    images: (p.product_images || [])
+      .sort((a, b) => a.position - b.position)
+      .map((img) => ({ url: img.url, alt_text: img.alt_text })),
+  }));
+}
+
+export default async function HomePage() {
+  const supabase = await createClient();
+
+  // Fetch on-sale and new arrivals in parallel
+  const [saleRes, newRes] = await Promise.all([
+    supabase
+      .from("products")
+      .select(
+        `id, title, handle, vendor, price, compare_at_price, inventory_count,
+         product_images (url, alt_text, position, is_primary)`
+      )
+      .eq("status", "active")
+      .not("compare_at_price", "is", null)
+      .gt("compare_at_price", 0)
+      .order("compare_at_price", { ascending: false })
+      .limit(4),
+    supabase
+      .from("products")
+      .select(
+        `id, title, handle, vendor, price, compare_at_price, inventory_count,
+         product_images (url, alt_text, position, is_primary)`
+      )
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(4),
+  ]);
+
+  // Filter sale products to only include those where compare_at_price > price
+  const saleProducts = formatProducts(
+    (saleRes.data || []).filter(
+      (p) => p.compare_at_price && p.compare_at_price > p.price
+    )
+  );
+  const newProducts = formatProducts(newRes.data || []);
+
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────── */}
@@ -115,8 +169,64 @@ export default function HomePage() {
         <div className="absolute -left-20 -bottom-20 w-[300px] h-[300px] rounded-full bg-brand/5 blur-[100px] pointer-events-none" />
       </section>
 
+      {/* ── On Sale ────────────────────────────────────── */}
+      {saleProducts.length > 0 && (
+        <section className="max-w-[1400px] mx-auto px-5 lg:px-8 py-16 md:py-20">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-[24px] md:text-[30px] font-bold text-charcoal tracking-tight">
+                On Sale
+              </h2>
+              <p className="text-[14px] text-muted mt-1">
+                Great deals on premium appliances
+              </p>
+            </div>
+            <Link
+              href="/collections"
+              className="hidden sm:inline-flex items-center gap-1.5 text-[14px] font-medium text-brand hover:underline"
+            >
+              View all
+              <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+            {saleProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── New Arrivals ───────────────────────────────── */}
+      {newProducts.length > 0 && (
+        <section className="max-w-[1400px] mx-auto px-5 lg:px-8 py-16 md:py-20 border-t border-border">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-[24px] md:text-[30px] font-bold text-charcoal tracking-tight">
+                New Arrivals
+              </h2>
+              <p className="text-[14px] text-muted mt-1">
+                The latest additions to our range
+              </p>
+            </div>
+            <Link
+              href="/collections"
+              className="hidden sm:inline-flex items-center gap-1.5 text-[14px] font-medium text-brand hover:underline"
+            >
+              View all
+              <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+            {newProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ── Category Grid ────────────────────────────────── */}
-      <section className="max-w-[1400px] mx-auto px-5 lg:px-8 py-20 md:py-24">
+      <section className="max-w-[1400px] mx-auto px-5 lg:px-8 py-20 md:py-24 border-t border-border">
         <div className="text-center mb-14">
           <h2 className="text-[28px] md:text-[34px] font-bold text-charcoal tracking-tight mb-3">
             Shop by Category

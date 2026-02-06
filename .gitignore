@@ -43,3 +43,6 @@ supabase/.temp/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# import data
+scripts/ventura-products.json

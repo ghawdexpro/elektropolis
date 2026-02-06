@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
         hostname: "cdn.shopify.com",
         pathname: "/s/files/**",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.1avant.com",
+        pathname: "/ventura-operations/**",
+      },
     ],
   },
   output: "standalone",

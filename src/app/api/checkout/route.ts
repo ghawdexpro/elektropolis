@@ -146,6 +146,7 @@ export async function POST(request: NextRequest) {
       sku: item.sku || null,
       price: item.price,
       quantity: item.quantity,
+      total: item.price * item.quantity,
       image_url: item.image || null,
     }));
 

@@ -28,13 +28,11 @@ interface OrderItem {
 }
 
 interface ShippingAddress {
-  first_name?: string;
-  last_name?: string;
-  address1?: string;
-  address2?: string;
+  name?: string;
+  line1?: string;
+  line2?: string;
   city?: string;
-  province?: string;
-  zip?: string;
+  postalCode?: string;
   country?: string;
   phone?: string;
 }
@@ -360,15 +358,13 @@ export default function OrderDetailPage() {
             <div className="flex items-start gap-3 text-sm text-charcoal">
               <MapPin className="w-4 h-4 text-muted mt-0.5 shrink-0" />
               <div className="space-y-0.5">
-                {(shippingAddr.first_name || shippingAddr.last_name) && (
-                  <p className="font-medium">
-                    {shippingAddr.first_name} {shippingAddr.last_name}
-                  </p>
+                {shippingAddr.name && (
+                  <p className="font-medium">{shippingAddr.name}</p>
                 )}
-                {shippingAddr.address1 && <p>{shippingAddr.address1}</p>}
-                {shippingAddr.address2 && <p>{shippingAddr.address2}</p>}
+                {shippingAddr.line1 && <p>{shippingAddr.line1}</p>}
+                {shippingAddr.line2 && <p>{shippingAddr.line2}</p>}
                 <p>
-                  {[shippingAddr.city, shippingAddr.province, shippingAddr.zip]
+                  {[shippingAddr.city, shippingAddr.postalCode]
                     .filter(Boolean)
                     .join(", ")}
                 </p>

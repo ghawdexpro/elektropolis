@@ -275,11 +275,11 @@ export default function RegisterPage() {
               {/* Terms hint */}
               <p className="text-[11px] text-muted text-center mt-5 leading-relaxed">
                 By creating an account, you agree to our{" "}
-                <Link href="/terms" className="underline hover:text-charcoal transition-colors">
+                <Link href="/pages/terms-of-service" className="underline hover:text-charcoal transition-colors">
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link href="/privacy" className="underline hover:text-charcoal transition-colors">
+                <Link href="/pages/privacy-policy" className="underline hover:text-charcoal transition-colors">
                   Privacy Policy
                 </Link>
                 .

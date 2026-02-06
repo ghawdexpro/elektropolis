@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 interface CartItem {
   productId: string;
@@ -37,6 +38,15 @@ function generateOrderNumber(): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // ── Rate limiting ────────────────────────────────
+    const ip = getClientIp(request);
+    if (!checkRateLimit(`checkout:${ip}`, 5, 60_000)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a moment." },
+        { status: 429 }
+      );
+    }
+
     const body: CheckoutPayload = await request.json();
 
     // ── Validate required fields ──────────────────────
@@ -75,27 +85,76 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Calculate totals ──────────────────────────────
-    const subtotal = body.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+    const supabase = createAdminClient();
+
+    // ── Server-side price validation & inventory check ─
+    const productIds = body.items.map((item) => item.productId);
+    const { data: dbProducts, error: productsError } = await supabase
+      .from("products")
+      .select("id, title, price, inventory_count, status, sku")
+      .in("id", productIds);
+
+    if (productsError || !dbProducts) {
+      console.error("Failed to fetch products:", productsError);
+      return NextResponse.json(
+        { error: "Failed to verify products. Please try again." },
+        { status: 500 }
+      );
+    }
+
+    const productMap = new Map(dbProducts.map((p) => [p.id, p]));
+
+    // Validate each item against database
+    for (const item of body.items) {
+      const dbProduct = productMap.get(item.productId);
+
+      if (!dbProduct) {
+        return NextResponse.json(
+          { error: `Product "${item.title}" is no longer available.` },
+          { status: 400 }
+        );
+      }
+
+      if (dbProduct.status !== "active") {
+        return NextResponse.json(
+          { error: `"${dbProduct.title}" is no longer available.` },
+          { status: 400 }
+        );
+      }
+
+      if (dbProduct.inventory_count < item.quantity) {
+        const available = dbProduct.inventory_count;
+        return NextResponse.json(
+          {
+            error:
+              available === 0
+                ? `"${dbProduct.title}" is out of stock.`
+                : `Only ${available} of "${dbProduct.title}" available.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // ── Calculate totals using DB prices (NOT client prices) ─
+    const subtotal = body.items.reduce((sum, item) => {
+      const dbProduct = productMap.get(item.productId)!;
+      return sum + Number(dbProduct.price) * item.quantity;
+    }, 0);
     const shippingCost = 0;
     const total = subtotal + shippingCost;
 
     const orderNumber = generateOrderNumber();
 
-    // ── Check if customer exists by email ─────────────
-    const supabase = createAdminClient();
+    // ── Find existing customer by email ──────────────
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", body.email.trim().toLowerCase())
+      .single();
+    const customerId = profile?.id ?? null;
 
-    // Try to find an existing user by email
-    const { data: userData } = await supabase.auth.admin.listUsers();
-    const existingUser = userData?.users?.find(
-      (u) => u.email?.toLowerCase() === body.email.trim().toLowerCase()
-    );
-    const customerId = existingUser?.id || null;
-
-    // ── Insert order ──────────────────────────────────
+    // ── Insert order ─────────────────────────────────
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
@@ -137,18 +196,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Insert order items ────────────────────────────
-    const orderItems = body.items.map((item) => ({
-      order_id: order.id,
-      product_id: item.productId,
-      variant_id: item.variantId || null,
-      title: item.title,
-      sku: item.sku || null,
-      price: item.price,
-      quantity: item.quantity,
-      total: item.price * item.quantity,
-      image_url: item.image || null,
-    }));
+    // ── Insert order items (using DB prices and titles) ─
+    const orderItems = body.items.map((item) => {
+      const dbProduct = productMap.get(item.productId)!;
+      return {
+        order_id: order.id,
+        product_id: item.productId,
+        variant_id: item.variantId || null,
+        title: dbProduct.title,
+        sku: dbProduct.sku || null,
+        price: Number(dbProduct.price),
+        quantity: item.quantity,
+        total: Number(dbProduct.price) * item.quantity,
+        image_url: item.image || null,
+      };
+    });
 
     const { error: itemsError } = await supabase
       .from("order_items")
@@ -156,8 +218,34 @@ export async function POST(request: NextRequest) {
 
     if (itemsError) {
       console.error("Failed to create order items:", itemsError);
-      // Order was created but items failed - still return the order
-      // The admin can fix items manually if needed
+      // Roll back: delete the order since items failed
+      await supabase.from("orders").delete().eq("id", order.id);
+      return NextResponse.json(
+        { error: "Failed to create order. Please try again." },
+        { status: 500 }
+      );
+    }
+
+    // ── Decrement inventory (optimistic locking) ─────
+    for (const item of body.items) {
+      const dbProduct = productMap.get(item.productId)!;
+      const { error: invError, count } = await supabase
+        .from("products")
+        .update({
+          inventory_count: dbProduct.inventory_count - item.quantity,
+        })
+        .eq("id", item.productId)
+        .eq("inventory_count", dbProduct.inventory_count);
+
+      if (invError || count === 0) {
+        // Inventory changed between check and update — race condition.
+        // Order is already created, so log but don't fail.
+        // Admin can reconcile manually.
+        console.warn(
+          `Inventory race condition for product ${item.productId}`,
+          invError
+        );
+      }
     }
 
     return NextResponse.json({

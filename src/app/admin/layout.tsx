@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: {
     default: "Admin",

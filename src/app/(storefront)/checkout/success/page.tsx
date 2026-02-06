@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/utils";
+import PaymentStatusPoller from "@/components/storefront/PaymentStatusPoller";
 import {
   CheckCircle,
   Package,
@@ -41,6 +42,7 @@ interface Order {
   customer_email: string;
   customer_phone: string;
   status: string;
+  payment_status: string;
   subtotal: number;
   shipping_cost: number;
   total: number;
@@ -53,24 +55,25 @@ interface Order {
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: Promise<{ order?: string }>;
+  searchParams: Promise<{ order?: string; orderId?: string }>;
 }) {
-  const { order: orderId } = await searchParams;
+  const params = await searchParams;
+  const id = params.orderId || params.order;
 
   let order: Order | null = null;
 
-  if (orderId) {
+  if (id) {
     const supabase = await createClient();
     const { data } = await supabase
       .from("orders")
       .select(
         `
-        id, order_number, customer_email, customer_phone, status,
+        id, order_number, customer_email, customer_phone, status, payment_status,
         subtotal, shipping_cost, total, shipping_address, notes, created_at,
         order_items (id, title, sku, price, quantity, image_url)
       `
       )
-      .eq("id", orderId)
+      .eq("id", id)
       .single();
 
     order = data as Order | null;
@@ -139,9 +142,16 @@ export default async function CheckoutSuccessPage({
           <span className="font-semibold text-charcoal">
             {order.order_number}
           </span>{" "}
-          has been placed successfully. We&apos;ll contact you to arrange
-          payment and delivery.
+          has been placed successfully.
         </p>
+      </div>
+
+      {/* Payment Status Polling */}
+      <div className="max-w-3xl mx-auto mb-8">
+        <PaymentStatusPoller
+          orderId={order.id}
+          initialStatus={order.payment_status}
+        />
       </div>
 
       <div className="max-w-3xl mx-auto">
@@ -324,7 +334,6 @@ export default async function CheckoutSuccessPage({
             </p>
             <p className="text-[13px] text-muted">
               Our team will contact you to arrange a convenient delivery time.
-              Payment will be collected upon confirmation.
             </p>
           </div>
         </div>

@@ -185,7 +185,15 @@ export default function CheckoutPage() {
       }
 
       clearCart();
-      router.push(`/checkout/success?order=${data.orderId}`);
+
+      // If Revolut checkout URL is available, redirect to payment page
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+
+      // Fallback: go to success page directly (payment arranged manually)
+      router.push(`/checkout/success?orderId=${data.orderId}`);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Something went wrong. Please try again."
@@ -557,18 +565,18 @@ export default function CheckoutPage() {
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" strokeWidth={2} />
-                    Placing Order...
+                    Processing...
                   </>
                 ) : (
                   <>
-                    Place Order
+                    Proceed to Payment
                     <ArrowRight className="w-4 h-4" strokeWidth={2} />
                   </>
                 )}
               </button>
 
               <p className="text-[12px] text-muted text-center mt-3">
-                Payment will be arranged after order confirmation.
+                You will be redirected to our secure payment page.
               </p>
 
               {/* Trust Badges */}

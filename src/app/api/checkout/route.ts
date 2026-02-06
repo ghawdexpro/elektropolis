@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { createRevolutOrder } from "@/lib/revolut";
 
 interface CartItem {
   productId: string;
@@ -248,9 +249,42 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ── Create Revolut payment order ────────────────
+    let checkoutUrl: string | null = null;
+
+    if (process.env.REVOLUT_SECRET_KEY) {
+      try {
+        const siteUrl =
+          process.env.NEXT_PUBLIC_SITE_URL || "https://elektropolis.mt";
+        const revolut = await createRevolutOrder({
+          amount: total,
+          currency: "EUR",
+          orderId: order.id,
+          orderNumber,
+          customerEmail: body.email.trim(),
+          redirectUrl: `${siteUrl}/checkout/success?orderId=${order.id}`,
+        });
+
+        // Store Revolut IDs on the order
+        await supabase
+          .from("orders")
+          .update({
+            revolut_order_id: revolut.revolutOrderId,
+            checkout_url: revolut.checkoutUrl,
+          })
+          .eq("id", order.id);
+
+        checkoutUrl = revolut.checkoutUrl;
+      } catch (err) {
+        console.error("Revolut order creation failed:", err);
+        // Order is created but payment link failed — admin can handle manually
+      }
+    }
+
     return NextResponse.json({
       orderId: order.id,
       orderNumber,
+      checkoutUrl,
     });
   } catch (err) {
     console.error("Checkout error:", err);

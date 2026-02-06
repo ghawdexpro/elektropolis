@@ -13,6 +13,7 @@ import {
   MapPin,
   Check,
   AlertCircle,
+  CreditCard,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/utils";
@@ -45,6 +46,8 @@ interface Order {
   customer_phone: string | null;
   status: string;
   payment_status: string;
+  revolut_order_id: string | null;
+  paid_at: string | null;
   subtotal: number;
   shipping_cost: number;
   total: number;
@@ -60,6 +63,13 @@ const ORDER_STATUSES = [
   "shipped",
   "delivered",
   "cancelled",
+];
+
+const PAYMENT_STATUSES = [
+  "pending",
+  "paid",
+  "failed",
+  "refunded",
 ];
 
 export default function OrderDetailPage() {
@@ -121,6 +131,47 @@ export default function OrderDetailPage() {
     } else {
       setOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
       setMessage({ type: "success", text: `Order status updated to ${newStatus}.` });
+    }
+    setUpdating(false);
+  };
+
+  const handlePaymentStatusUpdate = async (newStatus: string) => {
+    if (!order) return;
+    setUpdating(true);
+    setMessage(null);
+
+    const updateData: Record<string, unknown> = { payment_status: newStatus };
+    if (newStatus === "paid" && !order.paid_at) {
+      updateData.paid_at = new Date().toISOString();
+    }
+
+    const { error } = await supabase
+      .from("orders")
+      .update(updateData)
+      .eq("id", orderId);
+
+    if (error) {
+      setMessage({
+        type: "error",
+        text: `Failed to update payment status: ${error.message}`,
+      });
+    } else {
+      setOrder((prev) =>
+        prev
+          ? {
+              ...prev,
+              payment_status: newStatus,
+              paid_at:
+                newStatus === "paid" && !prev.paid_at
+                  ? new Date().toISOString()
+                  : prev.paid_at,
+            }
+          : null
+      );
+      setMessage({
+        type: "success",
+        text: `Payment status updated to ${newStatus}.`,
+      });
     }
     setUpdating(false);
   };
@@ -226,7 +277,46 @@ export default function OrderDetailPage() {
           <h3 className="text-sm font-semibold text-charcoal uppercase tracking-wide">
             Payment
           </h3>
-          <PaymentStatusBadge status={order.payment_status} />
+          <div className="flex items-center gap-2">
+            <PaymentStatusBadge status={order.payment_status} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted mb-1.5">
+              Update Payment Status
+            </label>
+            <select
+              value={order.payment_status}
+              onChange={(e) => handlePaymentStatusUpdate(e.target.value)}
+              disabled={updating}
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand bg-white disabled:opacity-50"
+            >
+              {PAYMENT_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+          {order.revolut_order_id && (
+            <div className="pt-2 border-t border-border">
+              <div className="flex items-center gap-2 text-xs text-muted">
+                <CreditCard className="w-3.5 h-3.5 shrink-0" />
+                <span>Revolut: {order.revolut_order_id}</span>
+              </div>
+              {order.paid_at && (
+                <p className="text-xs text-muted mt-1">
+                  Paid:{" "}
+                  {new Date(order.paid_at).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Customer info */}

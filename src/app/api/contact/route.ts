@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { sendContactNotification } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,16 +22,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For now, just log the contact form submission
-    // In production, you'd send an email via Resend, SendGrid, etc.
-    console.log("Contact form submission:", {
-      name,
-      email,
-      phone,
-      subject,
-      message,
-      timestamp: new Date().toISOString(),
-    });
+    // Send email notification to admin + auto-reply to customer
+    await sendContactNotification({ name, email, phone, subject, message });
 
     return NextResponse.json({ success: true });
   } catch {

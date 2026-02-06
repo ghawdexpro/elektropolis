@@ -14,6 +14,7 @@ import {
   Check,
   AlertCircle,
   CreditCard,
+  Send,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/utils";
@@ -80,6 +81,7 @@ export default function OrderDetailPage() {
   const [items, setItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -176,6 +178,36 @@ export default function OrderDetailPage() {
     setUpdating(false);
   };
 
+  const handleSendShippingEmail = async () => {
+    if (!order) return;
+    setSendingEmail(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/notify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setMessage({
+          type: "error",
+          text: data.error || "Failed to send notification",
+        });
+      } else {
+        setMessage({
+          type: "success",
+          text: "Shipping notification sent to customer.",
+        });
+      }
+    } catch {
+      setMessage({ type: "error", text: "Failed to send notification" });
+    }
+    setSendingEmail(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -270,6 +302,20 @@ export default function OrderDetailPage() {
               ))}
             </select>
           </div>
+          {(order.status === "shipped" || order.status === "delivered") && (
+            <button
+              onClick={handleSendShippingEmail}
+              disabled={sendingEmail}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand hover:bg-brand-hover text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {sendingEmail ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+              Send Shipping Email
+            </button>
+          )}
         </div>
 
         {/* Payment status */}

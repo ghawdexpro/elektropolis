@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyRevolutWebhook } from "@/lib/revolut";
+import { sendOrderConfirmation } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,7 +55,45 @@ export async function POST(request: NextRequest) {
         // Still return 200 so Revolut doesn't retry
       }
 
-      // TODO (Phase 3): Send order confirmation email here
+      // Send order confirmation email
+      if (!error) {
+        try {
+          const { data: orderData } = await supabase
+            .from("orders")
+            .select(
+              `
+              id, order_number, customer_email, subtotal, shipping_cost, total,
+              shipping_address,
+              order_items (title, quantity, price, image_url)
+            `
+            )
+            .eq(column, identifier)
+            .single();
+
+          if (orderData) {
+            const addr = orderData.shipping_address as Record<string, string> | null;
+            await sendOrderConfirmation({
+              orderNumber: orderData.order_number,
+              customerEmail: orderData.customer_email,
+              customerName: addr?.name || orderData.customer_email,
+              items: orderData.order_items || [],
+              subtotal: orderData.subtotal,
+              shippingCost: orderData.shipping_cost,
+              total: orderData.total,
+              shippingAddress: {
+                name: addr?.name || "",
+                line1: addr?.line1 || "",
+                line2: addr?.line2,
+                city: addr?.city || "",
+                postalCode: addr?.postalCode || "",
+                country: addr?.country || "Malta",
+              },
+            });
+          }
+        } catch (emailErr) {
+          console.error("Failed to send order confirmation email:", emailErr);
+        }
+      }
     } else if (
       eventType === "ORDER_CANCELLED" ||
       eventType === "ORDER_PAYMENT_FAILED"

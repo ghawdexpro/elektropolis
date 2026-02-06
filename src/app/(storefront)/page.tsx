@@ -42,7 +42,7 @@ const FEATURED_CATEGORIES = [
   },
   {
     title: "Air Treatment",
-    handle: "collections",
+    handle: "air-treatment",
     icon: Wind,
     description: "Air conditioners and dehumidifiers",
   },
@@ -254,11 +254,7 @@ export default async function HomePage() {
             return (
               <Link
                 key={cat.handle}
-                href={
-                  cat.handle === "collections"
-                    ? "/collections"
-                    : `/collections/${cat.handle}`
-                }
+                href={`/collections/${cat.handle}`}
                 className="group relative bg-surface hover:bg-brand-light border border-border hover:border-brand/20 rounded-xl p-6 md:p-8 transition-all duration-300"
                 style={{
                   animationDelay: `${i * 80}ms`,

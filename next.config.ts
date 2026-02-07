@@ -28,6 +28,11 @@ const nextConfig: NextConfig = {
         hostname: "www.edesa.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
     ],
   },
   output: "standalone",

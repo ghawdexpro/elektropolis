@@ -8,7 +8,7 @@ import { loadCollectionProducts, type FormattedProduct } from "@/app/(storefront
 interface Props {
   initialProducts: FormattedProduct[];
   totalCount: number;
-  productIds: string[];
+  collectionId: string;
   filters: {
     sort?: string;
     brand?: string;
@@ -21,7 +21,7 @@ interface Props {
 export default function CollectionProductList({
   initialProducts,
   totalCount,
-  productIds,
+  collectionId,
   filters,
 }: Props) {
   const [products, setProducts] = useState(initialProducts);
@@ -31,7 +31,7 @@ export default function CollectionProductList({
   const handleLoadMore = useCallback(async () => {
     const nextPage = currentPage + 1;
     const result = await loadCollectionProducts({
-      productIds,
+      collectionId,
       page: nextPage,
       ...filters,
     });
@@ -43,7 +43,7 @@ export default function CollectionProductList({
     });
     setCurrentPage(nextPage);
     setHasMore(result.hasMore);
-  }, [currentPage, productIds, filters]);
+  }, [currentPage, collectionId, filters]);
 
   return (
     <InfiniteScroll hasMore={hasMore} loadMore={handleLoadMore}>

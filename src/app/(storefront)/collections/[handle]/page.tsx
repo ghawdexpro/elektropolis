@@ -55,15 +55,13 @@ export default async function CollectionPage({
 
   if (!collection) notFound();
 
-  // Get product IDs in this collection
-  const { data: productIds } = await supabase
+  // Check if collection has any products
+  const { count: collectionProductCount } = await supabase
     .from("product_collections")
-    .select("product_id")
+    .select("product_id", { count: "exact", head: true })
     .eq("collection_id", collection.id);
 
-  const ids = productIds?.map((p) => p.product_id) || [];
-
-  if (ids.length === 0) {
+  if (!collectionProductCount || collectionProductCount === 0) {
     return (
       <div className="max-w-[1400px] mx-auto px-5 lg:px-8 py-12 md:py-16">
         <CollectionHeader
@@ -87,18 +85,19 @@ export default async function CollectionPage({
     );
   }
 
-  // Build query with filters
+  // Build query with inner join on product_collections (avoids large .in() queries)
   let query = supabase
     .from("products")
     .select(
       `
       id, title, handle, vendor, price, compare_at_price, inventory_count,
-      product_images (url, alt_text, position, is_primary)
+      product_images (url, alt_text, position, is_primary),
+      product_collections!inner (collection_id)
     `,
       { count: "exact" }
     )
     .eq("status", "active")
-    .in("id", ids);
+    .eq("product_collections.collection_id", collection.id);
 
   // Apply filters
   if (sp.brand) {
@@ -135,12 +134,12 @@ export default async function CollectionPage({
   const { data: products, count } = await query;
   const totalCount = count || 0;
 
-  // Get unique brands for filter sidebar
+  // Get unique brands for filter sidebar via inner join
   const { data: allProductsInCollection } = await supabase
     .from("products")
-    .select("vendor")
+    .select("vendor, product_collections!inner (collection_id)")
     .eq("status", "active")
-    .in("id", ids);
+    .eq("product_collections.collection_id", collection.id);
 
   const brands = [
     ...new Set(
@@ -189,7 +188,7 @@ export default async function CollectionPage({
               key={filterKey}
               initialProducts={formattedProducts}
               totalCount={totalCount}
-              productIds={ids}
+              collectionId={collection.id}
               filters={{
                 sort: sp.sort,
                 brand: sp.brand,

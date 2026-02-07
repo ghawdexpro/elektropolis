@@ -36,7 +36,7 @@ function formatProducts(products: Record<string, unknown>[]): FormattedProduct[]
 }
 
 export async function loadCollectionProducts(params: {
-  productIds: string[];
+  collectionId: string;
   page: number;
   sort?: string;
   brand?: string;
@@ -50,11 +50,12 @@ export async function loadCollectionProducts(params: {
     .from("products")
     .select(
       `id, title, handle, vendor, price, compare_at_price, inventory_count,
-       product_images (url, alt_text, position, is_primary)`,
+       product_images (url, alt_text, position, is_primary),
+       product_collections!inner (collection_id)`,
       { count: "exact" }
     )
     .eq("status", "active")
-    .in("id", params.productIds);
+    .eq("product_collections.collection_id", params.collectionId);
 
   if (params.brand) query = query.eq("vendor", params.brand);
   if (params.minPrice) query = query.gte("price", parseFloat(params.minPrice));

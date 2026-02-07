@@ -2,13 +2,18 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
+import type { SpecFilterValues } from "@/lib/collection-filters";
 
 interface CollectionFiltersProps {
   brands: string[];
+  specFilters?: SpecFilterValues[];
 }
 
-export default function CollectionFilters({ brands }: CollectionFiltersProps) {
+export default function CollectionFilters({
+  brands,
+  specFilters = [],
+}: CollectionFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -23,12 +28,20 @@ export default function CollectionFilters({ brands }: CollectionFiltersProps) {
   const [minPrice, setMinPrice] = useState(currentMinPrice);
   const [maxPrice, setMaxPrice] = useState(currentMaxPrice);
 
+  // Count active spec filters
+  const activeSpecCount = specFilters.filter(
+    (sf) => searchParams.get(sf.param)
+  ).length;
+
   const hasActiveFilters =
-    currentBrand || currentMinPrice || currentMaxPrice || currentInStock;
+    currentBrand ||
+    currentMinPrice ||
+    currentMaxPrice ||
+    currentInStock ||
+    activeSpecCount > 0;
 
   function updateParams(updates: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString());
-    // Reset page when filters change
     params.delete("page");
     for (const [key, value] of Object.entries(updates)) {
       if (value === null || value === "") {
@@ -49,6 +62,13 @@ export default function CollectionFilters({ brands }: CollectionFiltersProps) {
     setMaxPrice("");
   }
 
+  const activeFilterCount =
+    (currentBrand ? 1 : 0) +
+    (currentMinPrice ? 1 : 0) +
+    (currentMaxPrice ? 1 : 0) +
+    (currentInStock ? 1 : 0) +
+    activeSpecCount;
+
   return (
     <>
       {/* Mobile toggle */}
@@ -58,8 +78,10 @@ export default function CollectionFilters({ brands }: CollectionFiltersProps) {
       >
         <SlidersHorizontal className="w-4 h-4" strokeWidth={1.5} />
         Filters
-        {hasActiveFilters && (
-          <span className="w-1.5 h-1.5 rounded-full bg-brand" />
+        {activeFilterCount > 0 && (
+          <span className="min-w-[20px] h-5 flex items-center justify-center bg-brand text-white text-[11px] font-bold rounded-full px-1.5">
+            {activeFilterCount}
+          </span>
         )}
       </button>
 
@@ -84,11 +106,8 @@ export default function CollectionFilters({ brands }: CollectionFiltersProps) {
         </div>
 
         {/* Brand filter */}
-        {brands.length > 0 && (
-          <div>
-            <h4 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
-              Brand
-            </h4>
+        {brands.length > 1 && (
+          <FilterSection title="Brand">
             <div className="space-y-2">
               {brands.map((brand) => (
                 <label
@@ -120,14 +139,23 @@ export default function CollectionFilters({ brands }: CollectionFiltersProps) {
                 </button>
               )}
             </div>
-          </div>
+          </FilterSection>
         )}
 
+        {/* Dynamic spec-based filters */}
+        {specFilters.map((sf) => (
+          <SpecFilter
+            key={sf.param}
+            label={sf.label}
+            param={sf.param}
+            values={sf.values}
+            currentValue={searchParams.get(sf.param) || ""}
+            onUpdate={updateParams}
+          />
+        ))}
+
         {/* Price range */}
-        <div>
-          <h4 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
-            Price Range
-          </h4>
+        <FilterSection title="Price Range">
           <div className="flex items-center gap-2">
             <input
               type="number"
@@ -155,7 +183,7 @@ export default function CollectionFilters({ brands }: CollectionFiltersProps) {
               className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
             />
           </div>
-        </div>
+        </FilterSection>
 
         {/* In stock toggle */}
         <div>
@@ -178,50 +206,153 @@ export default function CollectionFilters({ brands }: CollectionFiltersProps) {
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
             {currentBrand && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-light text-brand text-xs font-medium rounded-full">
-                {currentBrand}
-                <button onClick={() => updateParams({ brand: null })}>
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
+              <FilterTag
+                label={currentBrand}
+                onClear={() => updateParams({ brand: null })}
+              />
             )}
+            {specFilters.map((sf) => {
+              const val = searchParams.get(sf.param);
+              if (!val) return null;
+              return (
+                <FilterTag
+                  key={sf.param}
+                  label={`${sf.label}: ${val}`}
+                  onClear={() => updateParams({ [sf.param]: null })}
+                />
+              );
+            })}
             {currentMinPrice && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-light text-brand text-xs font-medium rounded-full">
-                Min: €{currentMinPrice}
-                <button
-                  onClick={() => {
-                    setMinPrice("");
-                    updateParams({ minPrice: null });
-                  }}
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
+              <FilterTag
+                label={`Min: €${currentMinPrice}`}
+                onClear={() => {
+                  setMinPrice("");
+                  updateParams({ minPrice: null });
+                }}
+              />
             )}
             {currentMaxPrice && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-light text-brand text-xs font-medium rounded-full">
-                Max: €{currentMaxPrice}
-                <button
-                  onClick={() => {
-                    setMaxPrice("");
-                    updateParams({ maxPrice: null });
-                  }}
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
+              <FilterTag
+                label={`Max: €${currentMaxPrice}`}
+                onClear={() => {
+                  setMaxPrice("");
+                  updateParams({ maxPrice: null });
+                }}
+              />
             )}
             {currentInStock && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-light text-brand text-xs font-medium rounded-full">
-                In Stock
-                <button onClick={() => updateParams({ inStock: null })}>
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
+              <FilterTag
+                label="In Stock"
+                onClear={() => updateParams({ inStock: null })}
+              />
             )}
           </div>
         )}
       </div>
     </>
+  );
+}
+
+// ─── Sub-components ──────────────────────────────────────────────
+
+function FilterSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <h4 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
+        {title}
+      </h4>
+      {children}
+    </div>
+  );
+}
+
+function FilterTag({
+  label,
+  onClear,
+}: {
+  label: string;
+  onClear: () => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-light text-brand text-xs font-medium rounded-full">
+      {label}
+      <button onClick={onClear}>
+        <X className="w-3 h-3" />
+      </button>
+    </span>
+  );
+}
+
+const MAX_DEFAULT_VISIBLE = 6;
+
+function SpecFilter({
+  label,
+  param,
+  values,
+  currentValue,
+  onUpdate,
+}: {
+  label: string;
+  param: string;
+  values: string[];
+  currentValue: string;
+  onUpdate: (updates: Record<string, string | null>) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const showToggle = values.length > MAX_DEFAULT_VISIBLE;
+  const visible = expanded ? values : values.slice(0, MAX_DEFAULT_VISIBLE);
+
+  return (
+    <FilterSection title={label}>
+      <div className="space-y-2">
+        {visible.map((val) => (
+          <label
+            key={val}
+            className="flex items-center gap-2.5 cursor-pointer group"
+          >
+            <input
+              type="radio"
+              name={param}
+              checked={currentValue === val}
+              onChange={() =>
+                onUpdate({ [param]: currentValue === val ? null : val })
+              }
+              className="w-4 h-4 text-brand border-border focus:ring-brand/20 accent-brand"
+            />
+            <span className="text-sm text-charcoal group-hover:text-brand transition-colors">
+              {val}
+            </span>
+          </label>
+        ))}
+        {showToggle && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-1 text-xs text-muted hover:text-charcoal mt-1"
+          >
+            <ChevronDown
+              className={`w-3 h-3 transition-transform ${expanded ? "rotate-180" : ""}`}
+              strokeWidth={2}
+            />
+            {expanded
+              ? "Show less"
+              : `Show ${values.length - MAX_DEFAULT_VISIBLE} more`}
+          </button>
+        )}
+        {currentValue && (
+          <button
+            onClick={() => onUpdate({ [param]: null })}
+            className="text-xs text-muted hover:text-charcoal mt-1"
+          >
+            Clear {label.toLowerCase()}
+          </button>
+        )}
+      </div>
+    </FilterSection>
   );
 }

@@ -1,6 +1,11 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import {
+  getCollectionFilterDefs,
+  normalizeSpecValue,
+  ALL_SPEC_PARAMS,
+} from "@/lib/collection-filters";
 
 const PER_PAGE = 24;
 
@@ -37,19 +42,30 @@ function formatProducts(products: Record<string, unknown>[]): FormattedProduct[]
 
 export async function loadCollectionProducts(params: {
   collectionId: string;
+  collectionHandle?: string;
   page: number;
   sort?: string;
   brand?: string;
   minPrice?: string;
   maxPrice?: string;
   inStock?: string;
+  [key: string]: string | number | undefined;
 }): Promise<LoadMoreResult> {
   const supabase = await createClient();
+
+  // Collect active spec filters
+  const activeSpecFilters: Record<string, string> = {};
+  for (const param of ALL_SPEC_PARAMS) {
+    if (params[param] && typeof params[param] === "string") {
+      activeSpecFilters[param] = params[param] as string;
+    }
+  }
+  const hasSpecFilters = Object.keys(activeSpecFilters).length > 0;
 
   let query = supabase
     .from("products")
     .select(
-      `id, title, handle, vendor, price, compare_at_price, inventory_count,
+      `id, title, handle, vendor, price, compare_at_price, inventory_count, specifications,
        product_images (url, alt_text, position, is_primary),
        product_collections!inner (collection_id)`,
       { count: "exact" }
@@ -76,12 +92,48 @@ export async function loadCollectionProducts(params: {
       query = query.order("title", { ascending: true });
   }
 
-  const offset = (params.page - 1) * PER_PAGE;
-  query = query.range(offset, offset + PER_PAGE - 1);
+  if (hasSpecFilters) {
+    // Fetch larger batch for post-filtering on normalised spec values
+    query = query.range(0, 499);
+  } else {
+    const offset = (params.page - 1) * PER_PAGE;
+    query = query.range(offset, offset + PER_PAGE - 1);
+  }
 
-  const { data: products, count } = await query;
+  const { data: rawProducts, count } = await query;
+
+  if (hasSpecFilters && params.collectionHandle) {
+    // Post-filter by normalised spec values
+    const filterDefs = getCollectionFilterDefs(params.collectionHandle);
+    const paramToSpecKey = new Map(filterDefs.map((d) => [d.param, d.specKey]));
+
+    let filtered = (rawProducts || []).filter((p) => {
+      const specs: { key: string; value: string }[] =
+        (p as Record<string, unknown>).specifications as { key: string; value: string }[] || [];
+      for (const [param, value] of Object.entries(activeSpecFilters)) {
+        const specKey = paramToSpecKey.get(param);
+        if (!specKey) continue;
+        const hasMatch = specs.some(
+          (s) => s.key === specKey && normalizeSpecValue(s.value) === value
+        );
+        if (!hasMatch) return false;
+      }
+      return true;
+    });
+
+    const totalCount = filtered.length;
+    const offset = (params.page - 1) * PER_PAGE;
+    const pageItems = filtered.slice(offset, offset + PER_PAGE);
+
+    return {
+      items: formatProducts(pageItems as Record<string, unknown>[]),
+      hasMore: offset + pageItems.length < totalCount,
+    };
+  }
+
   const totalCount = count || 0;
-  const items = formatProducts((products as Record<string, unknown>[]) || []);
+  const items = formatProducts((rawProducts as Record<string, unknown>[]) || []);
+  const offset = (params.page - 1) * PER_PAGE;
 
   return {
     items,

@@ -9,19 +9,15 @@ interface Props {
   initialProducts: FormattedProduct[];
   totalCount: number;
   collectionId: string;
-  filters: {
-    sort?: string;
-    brand?: string;
-    minPrice?: string;
-    maxPrice?: string;
-    inStock?: string;
-  };
+  collectionHandle?: string;
+  filters: Record<string, string | undefined>;
 }
 
 export default function CollectionProductList({
   initialProducts,
   totalCount,
   collectionId,
+  collectionHandle,
   filters,
 }: Props) {
   const [products, setProducts] = useState(initialProducts);
@@ -32,6 +28,7 @@ export default function CollectionProductList({
     const nextPage = currentPage + 1;
     const result = await loadCollectionProducts({
       collectionId,
+      collectionHandle,
       page: nextPage,
       ...filters,
     });
@@ -43,7 +40,7 @@ export default function CollectionProductList({
     });
     setCurrentPage(nextPage);
     setHasMore(result.hasMore);
-  }, [currentPage, collectionId, filters]);
+  }, [currentPage, collectionId, collectionHandle, filters]);
 
   return (
     <InfiniteScroll hasMore={hasMore} loadMore={handleLoadMore}>

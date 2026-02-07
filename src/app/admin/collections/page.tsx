@@ -60,11 +60,11 @@ export default async function AdminCollectionsPage() {
       />
 
       {error ? (
-        <div className="rounded-xl border border-border bg-white px-6 py-12 text-center text-red-600">
+        <div className="rounded-xl border border-border bg-card px-6 py-12 text-center text-red-600">
           Failed to load collections: {error.message}
         </div>
       ) : !collections || collections.length === 0 ? (
-        <div className="rounded-xl border border-border bg-white">
+        <div className="rounded-xl border border-border bg-card">
           <EmptyState
             icon={FolderOpen}
             title="No collections yet"
@@ -79,7 +79,7 @@ export default async function AdminCollectionsPage() {
             return (
               <div
                 key={collection.id}
-                className="group overflow-hidden rounded-xl border border-border bg-white transition-shadow hover:shadow-sm"
+                className="group overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-sm"
               >
                 {/* Image */}
                 <div className="relative aspect-[16/9] bg-surface">

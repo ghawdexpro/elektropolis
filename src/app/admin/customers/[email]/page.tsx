@@ -87,7 +87,7 @@ export default function CustomerDetailPage() {
               icon={DollarSign}
               iconColor="text-brand bg-brand-light"
             />
-            <div className="rounded-xl border border-border bg-white p-5">
+            <div className="rounded-xl border border-border bg-card p-5">
               <div className="flex items-center gap-2 text-sm text-muted">
                 <Mail className="h-4 w-4" />
                 Email
@@ -96,7 +96,7 @@ export default function CustomerDetailPage() {
                 {email}
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-white p-5">
+            <div className="rounded-xl border border-border bg-card p-5">
               <div className="flex items-center gap-2 text-sm text-muted">
                 <Phone className="h-4 w-4" />
                 Phone
@@ -108,7 +108,7 @@ export default function CustomerDetailPage() {
           </div>
 
           {/* Order history */}
-          <div className="overflow-hidden rounded-xl border border-border bg-white">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="border-b border-border px-6 py-4">
               <h2 className="text-base font-semibold text-charcoal">
                 Order History

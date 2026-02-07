@@ -41,10 +41,10 @@ const icons: Record<ToastType, React.ReactNode> = {
 
 const styles: Record<ToastType, string> = {
   success:
-    "border-emerald-200 bg-white text-charcoal [--toast-icon:theme(--color-emerald-600)]",
+    "border-emerald-200 bg-card text-charcoal [--toast-icon:theme(--color-emerald-600)]",
   error:
-    "border-red-200 bg-white text-charcoal [--toast-icon:theme(--color-red-600)]",
-  info: "border-sky-200 bg-white text-charcoal [--toast-icon:theme(--color-sky-600)]",
+    "border-red-200 bg-card text-charcoal [--toast-icon:theme(--color-red-600)]",
+  info: "border-sky-200 bg-card text-charcoal [--toast-icon:theme(--color-sky-600)]",
 };
 
 function ToastItem({

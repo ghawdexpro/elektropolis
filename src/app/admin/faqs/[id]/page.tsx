@@ -157,7 +157,7 @@ export default function EditFAQPage() {
           }
         />
 
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <div className="space-y-5">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <FormField label="Category" required>
@@ -226,7 +226,7 @@ export default function EditFAQPage() {
         <div className="flex items-center justify-end gap-3 pb-8">
           <Link
             href="/admin/faqs"
-            className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-white transition-colors"
+            className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-card transition-colors"
           >
             Cancel
           </Link>

@@ -62,7 +62,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby="modal-title"
         className={cn(
-          "relative z-10 w-full overflow-hidden rounded-2xl border border-border bg-white shadow-xl",
+          "relative z-10 w-full overflow-hidden rounded-2xl border border-border bg-card shadow-xl",
           "animate-[scaleIn_200ms_ease-out]",
           size === "sm" && "max-w-sm",
           size === "md" && "max-w-lg",
@@ -117,7 +117,7 @@ export function ModalCancelButton({
   return (
     <button
       onClick={onClick}
-      className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-charcoal hover:bg-white transition-colors"
+      className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-charcoal hover:bg-card transition-colors"
     >
       {children}
     </button>

@@ -47,7 +47,7 @@ export function SkeletonStatCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-border bg-white p-5",
+        "rounded-xl border border-border bg-card p-5",
         className
       )}
       aria-hidden="true"
@@ -82,7 +82,7 @@ export function SkeletonTable({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border border-border bg-white",
+        "overflow-hidden rounded-xl border border-border bg-card",
         className
       )}
       aria-hidden="true"
@@ -126,7 +126,7 @@ export function SkeletonTable({
 export function SkeletonChart({ className }: { className?: string }) {
   return (
     <div
-      className={cn("rounded-xl border border-border bg-white", className)}
+      className={cn("rounded-xl border border-border bg-card", className)}
       aria-hidden="true"
     >
       {/* Header */}
@@ -182,7 +182,7 @@ export function SkeletonCard({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border border-border bg-white",
+        "overflow-hidden rounded-xl border border-border bg-card",
         className
       )}
       aria-hidden="true"
@@ -268,7 +268,7 @@ export function SkeletonDetailPage() {
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="space-y-4 rounded-xl border border-border bg-white p-5"
+            className="space-y-4 rounded-xl border border-border bg-card p-5"
           >
             <Skeleton className="h-3 w-24" />
             <Skeleton className="h-6 w-20 rounded-full" />
@@ -301,7 +301,7 @@ export function SkeletonFormPage() {
       </div>
 
       {/* Form card */}
-      <div className="rounded-xl border border-border bg-white p-6 space-y-6 animate-stagger">
+      <div className="rounded-xl border border-border bg-card p-6 space-y-6 animate-stagger">
         <Skeleton className="h-5 w-36" />
         <div className="space-y-5">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -314,7 +314,7 @@ export function SkeletonFormPage() {
       </div>
 
       {/* Second card */}
-      <div className="rounded-xl border border-border bg-white p-6 space-y-4">
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
         <Skeleton className="h-5 w-28" />
         <div className="grid grid-cols-2 gap-5">
           <div className="space-y-2">
@@ -346,7 +346,7 @@ export function SkeletonListPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-3 rounded-xl border border-border bg-white p-4">
+      <div className="flex gap-3 rounded-xl border border-border bg-card p-4">
         <Skeleton className="h-10 flex-1 max-w-sm rounded-lg" />
         <Skeleton className="h-10 w-36 rounded-lg" />
         <Skeleton className="h-10 w-36 rounded-lg" />

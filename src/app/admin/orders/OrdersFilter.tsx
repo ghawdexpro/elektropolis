@@ -32,7 +32,7 @@ export default function OrdersFilter() {
   }
 
   const selectClass =
-    "rounded-lg border border-border bg-white px-3 py-2.5 text-sm transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10";
+    "rounded-lg border border-border bg-card px-3 py-2.5 text-sm transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10";
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row">
@@ -44,7 +44,7 @@ export default function OrdersFilter() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search order # or email..."
-          className="h-10 w-full rounded-lg border border-border bg-white pl-10 pr-8 text-sm transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
+          className="h-10 w-full rounded-lg border border-border bg-card pl-10 pr-8 text-sm transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
         />
         {search && (
           <button

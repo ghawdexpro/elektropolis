@@ -271,7 +271,7 @@ export default function CollectionEditPage() {
         />
 
         {/* Basic Info */}
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="mb-5 text-base font-semibold text-charcoal">
             Basic Information
           </h2>
@@ -336,7 +336,7 @@ export default function CollectionEditPage() {
         </div>
 
         {/* Products */}
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-base font-semibold text-charcoal">
               Products ({assignedProducts.length})
@@ -367,7 +367,7 @@ export default function CollectionEditPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search products to add..."
-                    className="w-full rounded-lg border border-border bg-white py-2 pl-10 pr-4 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
+                    className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
                   />
                 </div>
                 <button
@@ -384,7 +384,7 @@ export default function CollectionEditPage() {
               </form>
 
               {searchResults.length > 0 && (
-                <div className="divide-y divide-border rounded-lg border border-border bg-white">
+                <div className="divide-y divide-border rounded-lg border border-border bg-card">
                   {searchResults.map((product) => (
                     <div
                       key={product.product_id}
@@ -451,7 +451,7 @@ export default function CollectionEditPage() {
         </div>
 
         {/* Settings */}
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="mb-5 text-base font-semibold text-charcoal">
             Settings
           </h2>
@@ -480,7 +480,7 @@ export default function CollectionEditPage() {
         </div>
 
         {/* SEO */}
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="mb-5 text-base font-semibold text-charcoal">SEO</h2>
           <div className="space-y-5">
             <FormField label="SEO Title" help={`${seoTitle.length}/70 characters`}>
@@ -514,7 +514,7 @@ export default function CollectionEditPage() {
         <div className="flex items-center justify-end gap-3 pb-8">
           <Link
             href="/admin/collections"
-            className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-white transition-colors"
+            className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-card transition-colors"
           >
             Cancel
           </Link>

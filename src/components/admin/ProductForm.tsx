@@ -311,7 +311,7 @@ export default function ProductForm({
         />
 
         {/* Basic Information */}
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="text-base font-semibold text-charcoal mb-5">
             Basic Information
           </h2>
@@ -394,7 +394,7 @@ export default function ProductForm({
         </div>
 
         {/* Images */}
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="text-base font-semibold text-charcoal mb-5">
             Images
           </h2>
@@ -414,7 +414,7 @@ export default function ProductForm({
         </div>
 
         {/* Pricing */}
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="text-base font-semibold text-charcoal mb-5">
             Pricing
           </h2>
@@ -461,7 +461,7 @@ export default function ProductForm({
         </div>
 
         {/* Inventory */}
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="text-base font-semibold text-charcoal mb-5">
             Inventory
           </h2>
@@ -505,7 +505,7 @@ export default function ProductForm({
         </div>
 
         {/* Organization */}
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="text-base font-semibold text-charcoal mb-5">
             Organization
           </h2>
@@ -522,7 +522,7 @@ export default function ProductForm({
         </div>
 
         {/* SEO */}
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="text-base font-semibold text-charcoal mb-5">SEO</h2>
           <div className="space-y-5">
             <FormField label="SEO Title" help={`${form.seo_title.length}/70 characters`}>
@@ -558,7 +558,7 @@ export default function ProductForm({
         <div className="flex items-center justify-end gap-3 pb-8">
           <Link
             href="/admin/products"
-            className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-white transition-colors"
+            className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-card transition-colors"
           >
             Cancel
           </Link>

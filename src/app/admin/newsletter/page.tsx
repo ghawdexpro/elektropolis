@@ -105,7 +105,7 @@ export default function NewsletterPage() {
           <button
             onClick={handleExportCSV}
             disabled={subscribers.length === 0}
-            className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-white transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-card transition-colors disabled:opacity-50"
           >
             <Download className="h-4 w-4" />
             Export CSV
@@ -114,7 +114,7 @@ export default function NewsletterPage() {
       />
 
       {/* Search */}
-      <div className="rounded-xl border border-border bg-white p-4">
+      <div className="rounded-xl border border-border bg-card p-4">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -129,7 +129,7 @@ export default function NewsletterPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by email..."
-              className="h-10 w-full rounded-lg border border-border bg-white pl-10 pr-8 text-sm transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
+              className="h-10 w-full rounded-lg border border-border bg-card pl-10 pr-8 text-sm transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
             />
             {search && (
               <button
@@ -153,7 +153,7 @@ export default function NewsletterPage() {
       </div>
 
       {/* Subscribers table */}
-      <div className="overflow-hidden rounded-xl border border-border bg-white">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         {loading ? (
           <SkeletonTable rows={6} columns={4} />
         ) : subscribers.length === 0 ? (

@@ -149,7 +149,7 @@ export default async function AdminDashboard() {
             <Link
               href="/"
               target="_blank"
-              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-white transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-card transition-colors"
             >
               <ExternalLink className="h-4 w-4" />
               View Store
@@ -223,7 +223,7 @@ export default async function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Orders — spans 2 columns */}
         <div className="lg:col-span-2">
-          <div className="overflow-hidden rounded-xl border border-border bg-white">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="flex items-center justify-between border-b border-border px-6 py-4">
               <h2 className="text-base font-semibold text-charcoal">
                 Recent Orders
@@ -315,7 +315,7 @@ export default async function AdminDashboard() {
       {/* Bottom row: Top Products + Low Stock */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Top Products */}
-        <div className="rounded-xl border border-border bg-white">
+        <div className="rounded-xl border border-border bg-card">
           <div className="border-b border-border px-5 py-4">
             <h3 className="text-base font-semibold text-charcoal flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-brand" />
@@ -351,7 +351,7 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="rounded-xl border border-border bg-white">
+        <div className="rounded-xl border border-border bg-card">
           <div className="border-b border-border px-5 py-4">
             <h3 className="text-base font-semibold text-charcoal flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-500" />

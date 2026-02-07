@@ -14,7 +14,57 @@
   --color-foreground: #2A2B2A;
   --color-warm-white: #FDFCFA;
   --color-overlay: rgba(42, 43, 42, 0.6);
+  --color-card: #ffffff;
   --font-sans: "DM Sans", system-ui, sans-serif;
+}
+
+/* Dark mode overrides — scoped to admin panel */
+.dark {
+  --color-charcoal: #F0F0EC;
+  --color-surface: #1A1A1A;
+  --color-border: #2E2E2C;
+  --color-muted: #8A8A86;
+  --color-background: #121212;
+  --color-foreground: #F0F0EC;
+  --color-warm-white: #161616;
+  --color-card: #1E1E1C;
+  --color-brand-light: rgba(255, 88, 13, 0.12);
+  --color-overlay: rgba(0, 0, 0, 0.7);
+}
+
+/* Dark mode badge color adjustments */
+.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.12); }
+.dark .bg-sky-50 { background-color: rgba(14, 165, 233, 0.12); }
+.dark .bg-violet-50 { background-color: rgba(139, 92, 246, 0.12); }
+.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.12); }
+.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.12); }
+.dark .bg-slate-50 { background-color: rgba(148, 163, 184, 0.12); }
+.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.12); }
+.dark .text-amber-700 { color: #fbbf24; }
+.dark .text-sky-700 { color: #38bdf8; }
+.dark .text-violet-700 { color: #a78bfa; }
+.dark .text-emerald-700 { color: #34d399; }
+.dark .text-red-700 { color: #f87171; }
+.dark .text-slate-600 { color: #94a3b8; }
+.dark .text-slate-500 { color: #94a3b8; }
+.dark .border-amber-200\/80 { border-color: rgba(245, 158, 11, 0.2); }
+.dark .border-sky-200\/80 { border-color: rgba(14, 165, 233, 0.2); }
+.dark .border-violet-200\/80 { border-color: rgba(139, 92, 246, 0.2); }
+.dark .border-emerald-200\/80 { border-color: rgba(16, 185, 129, 0.2); }
+.dark .border-red-200\/80 { border-color: rgba(239, 68, 68, 0.2); }
+.dark .border-slate-200\/80 { border-color: rgba(148, 163, 184, 0.2); }
+
+/* Dark mode form inputs */
+.dark input, .dark textarea, .dark select {
+  color-scheme: dark;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 *,

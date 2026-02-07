@@ -72,7 +72,7 @@ export default async function AdminProductsPage(props: {
       />
 
       {/* Filters */}
-      <div className="rounded-xl border border-border bg-white p-4">
+      <div className="rounded-xl border border-border bg-card p-4">
         <form className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
@@ -87,7 +87,7 @@ export default async function AdminProductsPage(props: {
           <select
             name="status"
             defaultValue={statusFilter}
-            className="rounded-lg border border-border bg-white px-4 py-2.5 text-sm transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
+            className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
           >
             <option value="all">All statuses</option>
             <option value="active">Active</option>
@@ -104,7 +104,7 @@ export default async function AdminProductsPage(props: {
       </div>
 
       {/* Products table */}
-      <div className="overflow-hidden rounded-xl border border-border bg-white">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         {error ? (
           <div className="px-6 py-12 text-center text-red-600">
             Failed to load products: {error.message}

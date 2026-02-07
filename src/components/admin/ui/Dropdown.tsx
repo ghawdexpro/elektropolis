@@ -108,7 +108,7 @@ export function Dropdown({
         <div
           ref={menuRef}
           className={cn(
-            "absolute top-full z-50 mt-1 min-w-[180px] overflow-hidden rounded-xl border border-border bg-white py-1 shadow-lg shadow-black/[0.08]",
+            "absolute top-full z-50 mt-1 min-w-[180px] overflow-hidden rounded-xl border border-border bg-card py-1 shadow-lg shadow-black/[0.08]",
             "animate-[slideUp_100ms_cubic-bezier(0.16,1,0.3,1)]",
             align === "right" ? "right-0" : "left-0"
           )}

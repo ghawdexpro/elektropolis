@@ -97,7 +97,7 @@ export default function SettingsPage() {
       />
 
       {/* Store Information */}
-      <div className="rounded-xl border border-border bg-white p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-5 text-base font-semibold text-charcoal">
           Store Information
         </h2>

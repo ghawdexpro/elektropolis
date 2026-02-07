@@ -156,7 +156,7 @@ export function CommandPalette() {
       {/* Dialog */}
       <div className="fixed inset-0 z-[101] flex items-start justify-center pt-[15vh]">
         <div
-          className="w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-black/20 animate-[slideUp_150ms_cubic-bezier(0.16,1,0.3,1)]"
+          className="w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-black/20 animate-[slideUp_150ms_cubic-bezier(0.16,1,0.3,1)]"
           role="dialog"
           aria-modal="true"
           aria-label="Command palette"
@@ -236,12 +236,12 @@ export function CommandPalette() {
           {/* Footer */}
           <div className="flex items-center gap-4 border-t border-border bg-surface/30 px-4 py-2">
             <div className="flex items-center gap-1.5 text-[10px] text-muted">
-              <kbd className="rounded border border-border bg-white px-1 py-0.5 font-mono text-[10px]">&uarr;</kbd>
-              <kbd className="rounded border border-border bg-white px-1 py-0.5 font-mono text-[10px]">&darr;</kbd>
+              <kbd className="rounded border border-border bg-card px-1 py-0.5 font-mono text-[10px]">&uarr;</kbd>
+              <kbd className="rounded border border-border bg-card px-1 py-0.5 font-mono text-[10px]">&darr;</kbd>
               <span>navigate</span>
             </div>
             <div className="flex items-center gap-1.5 text-[10px] text-muted">
-              <kbd className="rounded border border-border bg-white px-1.5 py-0.5 font-mono text-[10px]">&crarr;</kbd>
+              <kbd className="rounded border border-border bg-card px-1.5 py-0.5 font-mono text-[10px]">&crarr;</kbd>
               <span>select</span>
             </div>
           </div>

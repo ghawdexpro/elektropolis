@@ -95,7 +95,7 @@ export default function FAQsPage() {
           ))}
         </div>
       ) : faqs.length === 0 ? (
-        <div className="rounded-xl border border-border bg-white">
+        <div className="rounded-xl border border-border bg-card">
           <EmptyState
             icon={HelpCircle}
             title="No FAQs yet"
@@ -107,7 +107,7 @@ export default function FAQsPage() {
         Object.entries(grouped).map(([category, categoryFaqs]) => (
           <div
             key={category}
-            className="overflow-hidden rounded-xl border border-border bg-white"
+            className="overflow-hidden rounded-xl border border-border bg-card"
           >
             <div className="border-b border-border bg-surface/30 px-5 py-3">
               <h3 className="text-sm font-semibold text-charcoal">

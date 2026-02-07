@@ -218,7 +218,7 @@ export default function OrderDetailPage() {
       {/* Status cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {/* Order status */}
-        <div className="space-y-4 rounded-xl border border-border bg-white p-5">
+        <div className="space-y-4 rounded-xl border border-border bg-card p-5">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
             Order Status
           </h3>
@@ -259,7 +259,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Payment status */}
-        <div className="space-y-4 rounded-xl border border-border bg-white p-5">
+        <div className="space-y-4 rounded-xl border border-border bg-card p-5">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
             Payment
           </h3>
@@ -306,7 +306,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Customer info */}
-        <div className="space-y-3 rounded-xl border border-border bg-white p-5">
+        <div className="space-y-3 rounded-xl border border-border bg-card p-5">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
             Customer
           </h3>
@@ -326,7 +326,7 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Order items */}
-      <div className="overflow-hidden rounded-xl border border-border bg-white">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         <div className="border-b border-border px-6 py-4">
           <h2 className="text-base font-semibold text-charcoal">
             Order Items
@@ -403,7 +403,7 @@ export default function OrderDetailPage() {
       {/* Summary + Shipping */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Order summary */}
-        <div className="space-y-4 rounded-xl border border-border bg-white p-6">
+        <div className="space-y-4 rounded-xl border border-border bg-card p-6">
           <h3 className="text-base font-semibold text-charcoal">
             Order Summary
           </h3>
@@ -432,7 +432,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Shipping address */}
-        <div className="space-y-4 rounded-xl border border-border bg-white p-6">
+        <div className="space-y-4 rounded-xl border border-border bg-card p-6">
           <h3 className="text-base font-semibold text-charcoal">
             Shipping Address
           </h3>
@@ -466,7 +466,7 @@ export default function OrderDetailPage() {
 
       {/* Notes */}
       {order.notes && (
-        <div className="space-y-3 rounded-xl border border-border bg-white p-6">
+        <div className="space-y-3 rounded-xl border border-border bg-card p-6">
           <h3 className="text-base font-semibold text-charcoal">
             Order Notes
           </h3>

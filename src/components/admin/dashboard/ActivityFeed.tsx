@@ -42,7 +42,7 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
   const visibleItems = items.slice(0, 8);
 
   return (
-    <div className="rounded-xl border border-border bg-white">
+    <div className="rounded-xl border border-border bg-card">
       <div className="border-b border-border px-5 py-4">
         <h3 className="text-base font-semibold text-charcoal">
           Recent Activity
@@ -66,7 +66,7 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
                   <div className="relative z-10 mt-1.5 flex shrink-0">
                     <span
                       className={cn(
-                        "h-[11px] w-[11px] rounded-full ring-2 ring-white",
+                        "h-[11px] w-[11px] rounded-full ring-2 ring-card",
                         TYPE_COLORS[item.type]
                       )}
                     />

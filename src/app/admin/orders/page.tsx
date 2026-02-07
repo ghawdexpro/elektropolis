@@ -58,14 +58,14 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
       />
 
       {/* Filters */}
-      <div className="rounded-xl border border-border bg-white p-4">
+      <div className="rounded-xl border border-border bg-card p-4">
         <Suspense>
           <OrdersFilter />
         </Suspense>
       </div>
 
       {/* Orders table */}
-      <div className="overflow-hidden rounded-xl border border-border bg-white">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         {error ? (
           <div className="px-6 py-12 text-center text-red-600">
             Failed to load orders: {error.message}

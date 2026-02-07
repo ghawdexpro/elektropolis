@@ -33,7 +33,7 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
           className={cn(
             "relative flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150",
             activeTab === tab.id
-              ? "bg-white text-charcoal shadow-sm"
+              ? "bg-card text-charcoal shadow-sm"
               : "text-muted hover:text-charcoal"
           )}
         >

@@ -50,7 +50,7 @@ export function Tooltip({
         <div
           role="tooltip"
           className={cn(
-            "pointer-events-none absolute z-50 whitespace-nowrap rounded-lg bg-charcoal px-2.5 py-1.5 text-xs font-medium text-white shadow-lg",
+            "pointer-events-none absolute z-50 whitespace-nowrap rounded-lg bg-[#2A2B2A] px-2.5 py-1.5 text-xs font-medium text-white shadow-lg",
             "animate-[fadeIn_100ms_ease-out]",
             sideClasses[side]
           )}

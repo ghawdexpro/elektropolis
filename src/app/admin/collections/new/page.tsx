@@ -93,7 +93,7 @@ export default function NewCollectionPage() {
       />
 
       {/* Basic Info */}
-      <div className="rounded-xl border border-border bg-white p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-5 text-base font-semibold text-charcoal">
           Basic Information
         </h2>
@@ -158,7 +158,7 @@ export default function NewCollectionPage() {
       </div>
 
       {/* Settings */}
-      <div className="rounded-xl border border-border bg-white p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-5 text-base font-semibold text-charcoal">
           Settings
         </h2>
@@ -187,7 +187,7 @@ export default function NewCollectionPage() {
       </div>
 
       {/* SEO */}
-      <div className="rounded-xl border border-border bg-white p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-5 text-base font-semibold text-charcoal">SEO</h2>
         <div className="space-y-5">
           <FormField label="SEO Title" help={`${seoTitle.length}/70 characters`}>
@@ -221,7 +221,7 @@ export default function NewCollectionPage() {
       <div className="flex items-center justify-end gap-3 pb-8">
         <Link
           href="/admin/collections"
-          className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-white transition-colors"
+          className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-charcoal hover:bg-card transition-colors"
         >
           Cancel
         </Link>

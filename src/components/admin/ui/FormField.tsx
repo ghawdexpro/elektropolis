@@ -48,11 +48,11 @@ export function FormField({
 
 /* Consistent input class string for use throughout admin forms */
 export const inputStyles = cn(
-  "w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-charcoal",
+  "w-full rounded-lg border border-border bg-card px-3.5 py-2.5 text-sm text-charcoal",
   "placeholder:text-muted/50",
   "transition-colors duration-150",
   "focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10",
   "disabled:cursor-not-allowed disabled:bg-surface disabled:text-muted"
 );
 
-export const selectStyles = cn(inputStyles, "appearance-none bg-white pr-10");
+export const selectStyles = cn(inputStyles, "appearance-none bg-card pr-10");

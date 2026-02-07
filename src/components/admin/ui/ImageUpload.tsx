@@ -170,7 +170,7 @@ export function ImageUpload({
                       e.stopPropagation();
                       onSetPrimary(img.id);
                     }}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-charcoal shadow-sm hover:bg-brand hover:text-white transition-colors"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-card text-charcoal shadow-sm hover:bg-brand hover:text-white transition-colors"
                     title="Set as primary"
                   >
                     <Star className="h-4 w-4" />
@@ -181,7 +181,7 @@ export function ImageUpload({
                     e.stopPropagation();
                     onRemove(img.id);
                   }}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-red-600 shadow-sm hover:bg-red-600 hover:text-white transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-card text-red-600 shadow-sm hover:bg-red-600 hover:text-white transition-colors"
                   title="Remove image"
                 >
                   <X className="h-4 w-4" />

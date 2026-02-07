@@ -36,7 +36,7 @@ function CustomTooltip({
   const d = payload[0].payload;
 
   return (
-    <div className="rounded-xl border border-border bg-white px-4 py-3 shadow-lg shadow-black/[0.06]">
+    <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-lg shadow-black/[0.06]">
       <p className="text-xs font-medium text-muted">{formatDateShort(d.date)}</p>
       <p className="mt-1 text-lg font-bold tracking-tight text-charcoal">
         {formatPrice(d.revenue)}
@@ -63,7 +63,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
   const tickInterval = filtered.length <= 10 ? 0 : Math.floor(filtered.length / 6);
 
   return (
-    <div className="rounded-xl border border-border bg-white">
+    <div className="rounded-xl border border-border bg-card">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-4">
         <div>
@@ -87,7 +87,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
               className={cn(
                 "rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150",
                 period === p.days
-                  ? "bg-white text-charcoal shadow-sm"
+                  ? "bg-card text-charcoal shadow-sm"
                   : "text-muted hover:text-charcoal"
               )}
             >

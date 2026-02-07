@@ -65,7 +65,7 @@ export function DataTable<T>({
 
   if (data.length === 0 && emptyState) {
     return (
-      <div className={cn("rounded-xl border border-border bg-white", className)}>
+      <div className={cn("rounded-xl border border-border bg-card", className)}>
         <EmptyState {...emptyState} />
       </div>
     );
@@ -76,7 +76,7 @@ export function DataTable<T>({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border border-border bg-white",
+        "overflow-hidden rounded-xl border border-border bg-card",
         className
       )}
     >

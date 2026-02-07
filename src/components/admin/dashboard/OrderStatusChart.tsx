@@ -22,7 +22,7 @@ export function OrderStatusChart({ data }: OrderStatusChartProps) {
   );
 
   return (
-    <div className="rounded-xl border border-border bg-white">
+    <div className="rounded-xl border border-border bg-card">
       <div className="border-b border-border px-5 py-4">
         <div className="flex items-baseline justify-between">
           <h3 className="text-base font-semibold text-charcoal">

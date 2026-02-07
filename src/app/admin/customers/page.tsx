@@ -61,7 +61,7 @@ export default async function AdminCustomersPage() {
         subtitle={`${totalCount} customer${totalCount !== 1 ? "s" : ""} from order history`}
       />
 
-      <div className="overflow-hidden rounded-xl border border-border bg-white">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         {allCustomers.length === 0 ? (
           <EmptyState
             icon={Users}

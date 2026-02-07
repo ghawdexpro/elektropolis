@@ -18,9 +18,12 @@ import {
   X,
   Zap,
   Search,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/admin/ThemeProvider";
 
 interface NavItem {
   label: string;
@@ -72,6 +75,7 @@ const navGroups: NavGroup[] = [
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -165,6 +169,19 @@ export default function AdminSidebar() {
 
       {/* Bottom section */}
       <div className="border-t border-white/[0.06] px-3 py-3 space-y-0.5">
+        <button
+          onClick={() =>
+            setTheme(resolvedTheme === "dark" ? "light" : "dark")
+          }
+          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-white/55 hover:bg-white/[0.06] hover:text-white/80 transition-all duration-150"
+        >
+          {resolvedTheme === "dark" ? (
+            <Sun className="h-[18px] w-[18px] shrink-0 text-amber-400" />
+          ) : (
+            <Moon className="h-[18px] w-[18px] shrink-0 text-white/40" />
+          )}
+          {resolvedTheme === "dark" ? "Light Mode" : "Dark Mode"}
+        </button>
         <Link
           href="/"
           target="_blank"

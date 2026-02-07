@@ -10,6 +10,8 @@ import { BulkActionBar } from "@/components/admin/ui/BulkActionBar";
 import InfiniteScroll from "@/components/shared/InfiniteScroll";
 import { loadAdminProducts, type AdminProduct } from "@/app/admin/actions";
 import { downloadCSV } from "@/lib/csv-export";
+import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/admin/ui/Toast";
 
 interface Props {
   initialProducts: AdminProduct[];
@@ -69,6 +71,35 @@ export default function AdminProductsTable({
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [editingStockId, setEditingStockId] = useState<string | null>(null);
+  const [editingStockVal, setEditingStockVal] = useState("");
+  const supabase = createClient();
+  const { toast } = useToast();
+
+  const handleStockSave = async (productId: string) => {
+    const newCount = parseInt(editingStockVal, 10);
+    if (isNaN(newCount) || newCount < 0) {
+      setEditingStockId(null);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("products")
+      .update({ inventory_count: newCount })
+      .eq("id", productId);
+
+    if (error) {
+      toast({ type: "error", message: "Failed to update stock." });
+    } else {
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === productId ? { ...p, inventory_count: newCount } : p
+        )
+      );
+      toast({ type: "success", message: "Stock updated." });
+    }
+    setEditingStockId(null);
+  };
 
   const handleLoadMore = useCallback(async () => {
     const nextPage = currentPage + 1;
@@ -220,7 +251,32 @@ export default function AdminProductsTable({
                     {formatPrice(product.price)}
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <StockIndicator count={product.inventory_count} />
+                    {editingStockId === product.id ? (
+                      <input
+                        type="number"
+                        min="0"
+                        value={editingStockVal}
+                        onChange={(e) => setEditingStockVal(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleStockSave(product.id);
+                          if (e.key === "Escape") setEditingStockId(null);
+                        }}
+                        onBlur={() => handleStockSave(product.id)}
+                        autoFocus
+                        className="w-20 rounded-md border border-brand bg-card px-2 py-1 text-right text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setEditingStockId(product.id);
+                          setEditingStockVal(product.inventory_count.toString());
+                        }}
+                        className="cursor-pointer"
+                        title="Click to edit stock"
+                      >
+                        <StockIndicator count={product.inventory_count} />
+                      </button>
+                    )}
                   </td>
                   <td className="px-5 py-3">
                     <ProductStatusBadge status={product.status} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -76,6 +76,28 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
+  const [badges, setBadges] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const supabase = createClient();
+    // Fetch pending orders and low stock counts
+    Promise.all([
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending"),
+      supabase
+        .from("products")
+        .select("id", { count: "exact", head: true })
+        .lt("inventory_count", 5)
+        .eq("status", "active"),
+    ]).then(([ordersRes, stockRes]) => {
+      const b: Record<string, number> = {};
+      if (ordersRes.count && ordersRes.count > 0) b["/admin/orders"] = ordersRes.count;
+      if (stockRes.count && stockRes.count > 0) b["/admin/products"] = stockRes.count;
+      setBadges(b);
+    });
+  }, []);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -158,7 +180,12 @@ export default function AdminSidebar() {
                         active ? "text-brand" : "text-white/40"
                       )}
                     />
-                    {item.label}
+                    <span className="flex-1">{item.label}</span>
+                    {badges[item.href] && badges[item.href] > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5 text-[10px] font-bold text-white">
+                        {badges[item.href]}
+                      </span>
+                    )}
                   </Link>
                 );
               })}

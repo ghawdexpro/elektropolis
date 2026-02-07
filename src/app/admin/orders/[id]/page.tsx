@@ -12,6 +12,7 @@ import {
   MapPin,
   CreditCard,
   Send,
+  Printer,
 } from "lucide-react";
 import { SkeletonDetailPage } from "@/components/admin/ui/Skeleton";
 import { createClient } from "@/lib/supabase/client";
@@ -23,6 +24,7 @@ import {
 } from "@/components/admin/ui/Badge";
 import { useToast } from "@/components/admin/ui/Toast";
 import { selectStyles } from "@/components/admin/ui/FormField";
+import { OrderTimeline } from "@/components/admin/OrderTimeline";
 
 interface OrderItem {
   id: string;
@@ -214,6 +216,17 @@ export default function OrderDetailPage() {
           { label: `#${order.order_number}` },
         ]}
       />
+
+      {/* Actions bar */}
+      <div className="flex gap-2 print:hidden">
+        <button
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-charcoal hover:bg-surface transition-colors"
+        >
+          <Printer className="h-4 w-4" />
+          Print Invoice
+        </button>
+      </div>
 
       {/* Status cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -462,6 +475,19 @@ export default function OrderDetailPage() {
             </p>
           )}
         </div>
+      </div>
+
+      {/* Order Timeline */}
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h3 className="mb-4 text-base font-semibold text-charcoal">
+          Order Timeline
+        </h3>
+        <OrderTimeline
+          orderStatus={order.status}
+          paymentStatus={order.payment_status}
+          createdAt={order.created_at}
+          paidAt={order.paid_at}
+        />
       </div>
 
       {/* Notes */}

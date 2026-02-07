@@ -236,3 +236,38 @@ body {
   font-weight: 600;
   text-align: left;
 }
+
+/* Print styles for invoice */
+@media print {
+  aside, nav, button, select, input[type="checkbox"] {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+  }
+
+  #admin-root {
+    background: white !important;
+  }
+
+  #admin-root > div > main {
+    padding: 0 !important;
+  }
+
+  #admin-root > div {
+    padding-left: 0 !important;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  td, th {
+    border-bottom: 1px solid #ddd;
+    padding: 6px 12px;
+  }
+}

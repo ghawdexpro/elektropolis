@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { Mail, Phone, ShoppingBag, ArrowUp, ArrowDown } from "lucide-react";
+import { Mail, Phone, ShoppingBag, ArrowUp, ArrowDown, Crown, Star, UserPlus } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import InfiniteScroll from "@/components/shared/InfiniteScroll";
 import { loadAdminCustomers, type AdminCustomer } from "@/app/admin/actions";
@@ -129,12 +129,15 @@ export default function AdminCustomersTable({
               >
                 <td className="px-5 py-3">
                   <div>
-                    <Link
-                      href={`/admin/customers/${encodeURIComponent(customer.email)}`}
-                      className="font-medium text-charcoal hover:text-brand transition-colors"
-                    >
-                      {customer.name || customer.email}
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      <Link
+                        href={`/admin/customers/${encodeURIComponent(customer.email)}`}
+                        className="font-medium text-charcoal hover:text-brand transition-colors"
+                      >
+                        {customer.name || customer.email}
+                      </Link>
+                      <LtvTier totalSpent={customer.totalSpent} orderCount={customer.orderCount} />
+                    </div>
                     {customer.name && (
                       <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
                         <Mail className="h-3 w-3" />
@@ -180,5 +183,30 @@ export default function AdminCustomersTable({
         </table>
       </div>
     </InfiniteScroll>
+  );
+}
+
+function LtvTier({ totalSpent, orderCount }: { totalSpent: number; orderCount: number }) {
+  if (totalSpent >= 500 || orderCount >= 5) {
+    return (
+      <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700" title="VIP Customer">
+        <Crown className="h-2.5 w-2.5" />
+        VIP
+      </span>
+    );
+  }
+  if (totalSpent >= 100 || orderCount >= 2) {
+    return (
+      <span className="inline-flex items-center gap-0.5 rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted" title="Regular Customer">
+        <Star className="h-2.5 w-2.5" />
+        Regular
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded-full bg-sky-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-600" title="New Customer">
+      <UserPlus className="h-2.5 w-2.5" />
+      New
+    </span>
   );
 }

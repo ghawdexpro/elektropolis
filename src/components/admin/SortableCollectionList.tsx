@@ -119,7 +119,16 @@ function SortableCard({
           </p>
         )}
         <div className="flex items-center justify-between pt-2">
-          <span className="text-xs text-muted">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+              productCount === 0
+                ? "bg-red-50 text-red-600"
+                : productCount <= 5
+                  ? "bg-amber-50 text-amber-700"
+                  : "bg-surface text-muted"
+            )}
+          >
             {productCount} {productCount === 1 ? "product" : "products"}
           </span>
           <div className="flex items-center gap-2">

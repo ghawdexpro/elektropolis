@@ -1,8 +1,10 @@
 import { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import ProductGrid from "@/components/storefront/ProductGrid";
 import SortDropdown from "@/components/storefront/SortDropdown";
+import SearchResultsList from "@/components/storefront/SearchResultsList";
 import { Search } from "lucide-react";
+
+const PER_PAGE = 24;
 
 interface Props {
   searchParams: Promise<{ q?: string; sort?: string }>;
@@ -21,16 +23,8 @@ export default async function SearchPage({ searchParams }: Props) {
   const query = q?.trim() || "";
   const supabase = await createClient();
 
-  let products: Array<{
-    id: string;
-    title: string;
-    handle: string;
-    vendor: string | null;
-    price: number;
-    compare_at_price: number | null;
-    inventory_count: number;
-    product_images: Array<{ url: string; alt_text: string | null; position: number }>;
-  }> = [];
+  let products: Record<string, unknown>[] = [];
+  let totalCount = 0;
 
   if (query.length >= 2) {
     const tsQuery = query
@@ -39,58 +33,71 @@ export default async function SearchPage({ searchParams }: Props) {
       .map((w) => `${w}:*`)
       .join(" & ");
 
-    let dbQuery = supabase
+    const selectCols = `id, title, handle, vendor, price, compare_at_price, inventory_count,
+         product_images (url, alt_text, position, is_primary)`;
+
+    // Try FTS first
+    let ftsQuery = supabase
       .from("products")
-      .select(
-        `id, title, handle, vendor, price, compare_at_price, inventory_count,
-         product_images (url, alt_text, position, is_primary)`
-      )
-      .eq("status", "active");
+      .select(selectCols, { count: "exact" })
+      .eq("status", "active")
+      .textSearch("search_vector", tsQuery);
 
-    // Try full-text search first
-    const { data: ftsResults, error } = await dbQuery.textSearch("search_vector", tsQuery);
+    // Sort at DB level for correct pagination
+    switch (sort) {
+      case "price-asc":
+        ftsQuery = ftsQuery.order("price", { ascending: true });
+        break;
+      case "price-desc":
+        ftsQuery = ftsQuery.order("price", { ascending: false });
+        break;
+      default:
+        break;
+    }
 
-    if (error || !ftsResults?.length) {
+    ftsQuery = ftsQuery.range(0, PER_PAGE - 1);
+    const { data: ftsResults, count: ftsCount, error } = await ftsQuery;
+
+    if (!error && ftsResults && ftsResults.length > 0) {
+      products = ftsResults as Record<string, unknown>[];
+      totalCount = ftsCount || 0;
+    } else {
       // Fallback to ILIKE
-      const { data: fallback } = await supabase
+      let fallbackQuery = supabase
         .from("products")
-        .select(
-          `id, title, handle, vendor, price, compare_at_price, inventory_count,
-           product_images (url, alt_text, position, is_primary)`
-        )
+        .select(selectCols, { count: "exact" })
         .eq("status", "active")
         .or(`title.ilike.%${query}%,vendor.ilike.%${query}%,product_type.ilike.%${query}%`);
 
-      products = fallback || [];
-    } else {
-      products = ftsResults;
-    }
+      switch (sort) {
+        case "price-asc":
+          fallbackQuery = fallbackQuery.order("price", { ascending: true });
+          break;
+        case "price-desc":
+          fallbackQuery = fallbackQuery.order("price", { ascending: false });
+          break;
+        default:
+          break;
+      }
 
-    // Sort
-    switch (sort) {
-      case "price-asc":
-        products.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        products.sort((a, b) => b.price - a.price);
-        break;
-      case "newest":
-        // Already sorted by relevance from FTS
-        break;
-      default:
-        // Keep relevance order from FTS
-        break;
+      fallbackQuery = fallbackQuery.range(0, PER_PAGE - 1);
+      const { data: fallback, count: fallbackCount } = await fallbackQuery;
+      products = (fallback as Record<string, unknown>[]) || [];
+      totalCount = fallbackCount || 0;
     }
   }
 
   const formattedProducts = products.map((p) => ({
-    ...p,
-    images: (p.product_images || [])
-      .sort((a: { position: number }, b: { position: number }) => a.position - b.position)
-      .map((img: { url: string; alt_text: string | null }) => ({
-        url: img.url,
-        alt_text: img.alt_text,
-      })),
+    id: p.id as string,
+    title: p.title as string,
+    handle: p.handle as string,
+    vendor: p.vendor as string | null,
+    price: p.price as number,
+    compare_at_price: p.compare_at_price as number | null,
+    inventory_count: p.inventory_count as number,
+    images: ((p.product_images as { url: string; alt_text: string | null; position: number }[]) || [])
+      .sort((a, b) => a.position - b.position)
+      .map((img) => ({ url: img.url, alt_text: img.alt_text })),
   }));
 
   return (
@@ -109,11 +116,11 @@ export default async function SearchPage({ searchParams }: Props) {
                 Results for &ldquo;{query}&rdquo;
               </h1>
               <p className="text-[14px] text-muted">
-                {formattedProducts.length}{" "}
-                {formattedProducts.length === 1 ? "product" : "products"} found
+                {totalCount}{" "}
+                {totalCount === 1 ? "product" : "products"} found
               </p>
             </div>
-            {formattedProducts.length > 1 && (
+            {totalCount > 1 && (
               <div className="shrink-0">
                 <SortDropdown currentSort={sort} basePath={`/search?q=${encodeURIComponent(query)}`} />
               </div>
@@ -132,7 +139,13 @@ export default async function SearchPage({ searchParams }: Props) {
       </div>
 
       {formattedProducts.length > 0 ? (
-        <ProductGrid products={formattedProducts} />
+        <SearchResultsList
+          key={`${query}-${sort}`}
+          initialProducts={formattedProducts}
+          totalCount={totalCount}
+          query={query}
+          sort={sort}
+        />
       ) : query ? (
         <div className="text-center py-20">
           <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">

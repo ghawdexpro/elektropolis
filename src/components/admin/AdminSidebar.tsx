@@ -9,6 +9,9 @@ import {
   ShoppingCart,
   FolderOpen,
   Users,
+  Settings,
+  Mail,
+  HelpCircle,
   ExternalLink,
   LogOut,
   Menu,
@@ -18,12 +21,51 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Products", href: "/admin/products", icon: Package },
-  { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
-  { label: "Collections", href: "/admin/collections", icon: FolderOpen },
-  { label: "Customers", href: "/admin/customers", icon: Users },
+interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    title: "Overview",
+    items: [
+      { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    ],
+  },
+  {
+    title: "Catalog",
+    items: [
+      { label: "Products", href: "/admin/products", icon: Package },
+      { label: "Collections", href: "/admin/collections", icon: FolderOpen },
+    ],
+  },
+  {
+    title: "Sales",
+    items: [
+      { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
+      { label: "Customers", href: "/admin/customers", icon: Users },
+    ],
+  },
+  {
+    title: "Content",
+    items: [
+      { label: "Newsletter", href: "/admin/newsletter", icon: Mail },
+      { label: "FAQs", href: "/admin/faqs", icon: HelpCircle },
+    ],
+  },
+  {
+    title: "Configuration",
+    items: [
+      { label: "Settings", href: "/admin/settings", icon: Settings },
+    ],
+  },
 ];
 
 export default function AdminSidebar() {
@@ -42,63 +84,82 @@ export default function AdminSidebar() {
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/10">
+      <div className="border-b border-white/[0.06] px-5 py-4">
         <Link
           href="/admin"
           className="flex items-center gap-2.5"
           onClick={() => setMobileOpen(false)}
         >
-          <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
-            <Zap className="w-4.5 h-4.5 text-white" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand">
+            <Zap className="h-4 w-4 text-white" />
           </div>
-          <span className="text-lg font-semibold text-white tracking-tight">
-            EP Admin
-          </span>
+          <div className="flex flex-col">
+            <span className="text-[15px] font-semibold leading-tight text-white tracking-tight">
+              ElektroPolis
+            </span>
+            <span className="text-[10px] font-medium uppercase tracking-[0.08em] text-white/40">
+              Admin
+            </span>
+          </div>
         </Link>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                active
-                  ? "bg-brand text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
-              )}
-            >
-              <Icon className="w-5 h-5 shrink-0" />
-              {item.label}
-            </Link>
-          );
-        })}
+      {/* Navigation groups */}
+      <nav className="flex-1 overflow-y-auto px-3 py-3">
+        {navGroups.map((group) => (
+          <div key={group.title} className="mb-4">
+            <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/30">
+              {group.title}
+            </p>
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150",
+                      active
+                        ? "bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                        : "text-white/55 hover:bg-white/[0.06] hover:text-white/80"
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        "h-[18px] w-[18px] shrink-0",
+                        active ? "text-brand" : "text-white/40"
+                      )}
+                    />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* Bottom section */}
-      <div className="px-3 pb-4 space-y-1 border-t border-white/10 pt-4">
+      <div className="border-t border-white/[0.06] px-3 py-3 space-y-0.5">
         <Link
           href="/"
           target="_blank"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-white/55 hover:bg-white/[0.06] hover:text-white/80 transition-all duration-150"
           onClick={() => setMobileOpen(false)}
         >
-          <ExternalLink className="w-5 h-5 shrink-0" />
+          <ExternalLink className="h-[18px] w-[18px] shrink-0 text-white/40" />
           View Store
         </Link>
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors w-full"
+          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-white/55 hover:bg-white/[0.06] hover:text-white/80 transition-all duration-150"
         >
-          <LogOut className="w-5 h-5 shrink-0" />
+          <LogOut className="h-[18px] w-[18px] shrink-0 text-white/40" />
           Sign Out
         </button>
       </div>
@@ -110,16 +171,16 @@ export default function AdminSidebar() {
       {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 lg:hidden bg-charcoal text-white p-2 rounded-lg shadow-lg"
+        className="fixed left-4 top-4 z-50 rounded-lg bg-charcoal p-2 text-white shadow-lg lg:hidden"
         aria-label="Open menu"
       >
-        <Menu className="w-5 h-5" />
+        <Menu className="h-5 w-5" />
       </button>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] lg:hidden animate-[fadeIn_150ms_ease-out]"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -127,22 +188,22 @@ export default function AdminSidebar() {
       {/* Mobile sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-charcoal transform transition-transform duration-300 ease-in-out lg:hidden",
+          "fixed inset-y-0 left-0 z-50 w-60 bg-[#1a1b1a] transform transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] lg:hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <button
           onClick={() => setMobileOpen(false)}
-          className="absolute top-4 right-4 text-white/70 hover:text-white"
+          className="absolute right-3 top-4 rounded-md p-1 text-white/50 hover:text-white"
           aria-label="Close menu"
         >
-          <X className="w-5 h-5" />
+          <X className="h-5 w-5" />
         </button>
         {sidebarContent}
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-charcoal">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-60 lg:flex-col bg-[#1a1b1a]">
         {sidebarContent}
       </aside>
     </>

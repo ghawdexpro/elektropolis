@@ -2,10 +2,9 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import ProductGrid from "@/components/storefront/ProductGrid";
 import SortDropdown from "@/components/storefront/SortDropdown";
 import CollectionFilters from "@/components/storefront/CollectionFilters";
-import Pagination from "@/components/storefront/Pagination";
+import CollectionProductList from "@/components/storefront/CollectionProductList";
 
 const PER_PAGE = 24;
 
@@ -17,7 +16,6 @@ interface Props {
     minPrice?: string;
     maxPrice?: string;
     inStock?: string;
-    page?: string;
   }>;
 }
 
@@ -131,14 +129,11 @@ export default async function CollectionPage({
       query = query.order("title", { ascending: true });
   }
 
-  // Pagination
-  const page = Math.max(1, parseInt(sp.page || "1", 10) || 1);
-  const offset = (page - 1) * PER_PAGE;
-  query = query.range(offset, offset + PER_PAGE - 1);
+  // First page only
+  query = query.range(0, PER_PAGE - 1);
 
   const { data: products, count } = await query;
   const totalCount = count || 0;
-  const totalPages = Math.ceil(totalCount / PER_PAGE);
 
   // Get unique brands for filter sidebar
   const { data: allProductsInCollection } = await supabase
@@ -168,6 +163,8 @@ export default async function CollectionPage({
       })),
   }));
 
+  const filterKey = `${sp.sort}-${sp.brand}-${sp.minPrice}-${sp.maxPrice}-${sp.inStock}`;
+
   return (
     <div className="max-w-[1400px] mx-auto px-5 lg:px-8 py-12 md:py-16">
       <CollectionHeader
@@ -185,15 +182,22 @@ export default async function CollectionPage({
           </Suspense>
         </aside>
 
-        {/* Product grid + pagination */}
+        {/* Product grid with infinite scroll */}
         <div className="flex-1 min-w-0">
           {formattedProducts.length > 0 ? (
-            <>
-              <ProductGrid products={formattedProducts} />
-              <Suspense>
-                <Pagination currentPage={page} totalPages={totalPages} />
-              </Suspense>
-            </>
+            <CollectionProductList
+              key={filterKey}
+              initialProducts={formattedProducts}
+              totalCount={totalCount}
+              productIds={ids}
+              filters={{
+                sort: sp.sort,
+                brand: sp.brand,
+                minPrice: sp.minPrice,
+                maxPrice: sp.maxPrice,
+                inStock: sp.inStock,
+              }}
+            />
           ) : (
             <div className="text-center py-20">
               <p className="text-[15px] text-muted mb-2">

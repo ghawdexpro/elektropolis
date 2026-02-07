@@ -5,19 +5,23 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ArrowLeft,
   Loader2,
   Package,
   Mail,
   Phone,
   MapPin,
-  Check,
-  AlertCircle,
   CreditCard,
   Send,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/utils";
+import { PageHeader } from "@/components/admin/ui/PageHeader";
+import {
+  OrderStatusBadge,
+  PaymentStatusBadge,
+} from "@/components/admin/ui/Badge";
+import { useToast } from "@/components/admin/ui/Toast";
+import { selectStyles } from "@/components/admin/ui/FormField";
 
 interface OrderItem {
   id: string;
@@ -66,26 +70,18 @@ const ORDER_STATUSES = [
   "cancelled",
 ];
 
-const PAYMENT_STATUSES = [
-  "pending",
-  "paid",
-  "failed",
-  "refunded",
-];
+const PAYMENT_STATUSES = ["pending", "paid", "failed", "refunded"];
 
 export default function OrderDetailPage() {
   const params = useParams<{ id: string }>();
   const orderId = params.id;
+  const { toast } = useToast();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [items, setItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
 
   const supabase = createClient();
 
@@ -101,7 +97,7 @@ export default function OrderDetailPage() {
     ]);
 
     if (orderRes.error || !orderRes.data) {
-      setMessage({ type: "error", text: "Order not found." });
+      toast({ type: "error", message: "Order not found." });
       setLoading(false);
       return;
     }
@@ -109,7 +105,7 @@ export default function OrderDetailPage() {
     setOrder(orderRes.data as Order);
     setItems((itemsRes.data as OrderItem[]) ?? []);
     setLoading(false);
-  }, [orderId, supabase]);
+  }, [orderId, supabase, toast]);
 
   useEffect(() => {
     loadOrder();
@@ -118,7 +114,6 @@ export default function OrderDetailPage() {
   const handleStatusUpdate = async (newStatus: string) => {
     if (!order) return;
     setUpdating(true);
-    setMessage(null);
 
     const { error } = await supabase
       .from("orders")
@@ -126,13 +121,10 @@ export default function OrderDetailPage() {
       .eq("id", orderId);
 
     if (error) {
-      setMessage({
-        type: "error",
-        text: `Failed to update status: ${error.message}`,
-      });
+      toast({ type: "error", message: `Failed to update status: ${error.message}` });
     } else {
       setOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
-      setMessage({ type: "success", text: `Order status updated to ${newStatus}.` });
+      toast({ type: "success", message: `Status updated to ${newStatus}.` });
     }
     setUpdating(false);
   };
@@ -140,7 +132,6 @@ export default function OrderDetailPage() {
   const handlePaymentStatusUpdate = async (newStatus: string) => {
     if (!order) return;
     setUpdating(true);
-    setMessage(null);
 
     const updateData: Record<string, unknown> = { payment_status: newStatus };
     if (newStatus === "paid" && !order.paid_at) {
@@ -153,10 +144,7 @@ export default function OrderDetailPage() {
       .eq("id", orderId);
 
     if (error) {
-      setMessage({
-        type: "error",
-        text: `Failed to update payment status: ${error.message}`,
-      });
+      toast({ type: "error", message: `Failed to update payment: ${error.message}` });
     } else {
       setOrder((prev) =>
         prev
@@ -170,10 +158,7 @@ export default function OrderDetailPage() {
             }
           : null
       );
-      setMessage({
-        type: "success",
-        text: `Payment status updated to ${newStatus}.`,
-      });
+      toast({ type: "success", message: `Payment status updated to ${newStatus}.` });
     }
     setUpdating(false);
   };
@@ -181,7 +166,6 @@ export default function OrderDetailPage() {
   const handleSendShippingEmail = async () => {
     if (!order) return;
     setSendingEmail(true);
-    setMessage(null);
 
     try {
       const res = await fetch(`/api/admin/orders/${orderId}/notify`, {
@@ -192,18 +176,12 @@ export default function OrderDetailPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        setMessage({
-          type: "error",
-          text: data.error || "Failed to send notification",
-        });
+        toast({ type: "error", message: data.error || "Failed to send notification" });
       } else {
-        setMessage({
-          type: "success",
-          text: "Shipping notification sent to customer.",
-        });
+        toast({ type: "success", message: "Shipping notification sent." });
       }
     } catch {
-      setMessage({ type: "error", text: "Failed to send notification" });
+      toast({ type: "error", message: "Failed to send notification" });
     }
     setSendingEmail(false);
   };
@@ -211,16 +189,19 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-muted" />
+        <Loader2 className="h-6 w-6 animate-spin text-muted" />
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="text-center py-20">
-        <p className="text-muted">Order not found.</p>
-        <Link href="/admin/orders" className="text-brand text-sm mt-2 inline-block">
+      <div className="py-20 text-center">
+        <p className="text-lg font-medium text-charcoal">Order not found</p>
+        <Link
+          href="/admin/orders"
+          className="mt-2 inline-block text-sm text-brand hover:text-brand-hover"
+        >
           Back to orders
         </Link>
       </div>
@@ -230,70 +211,41 @@ export default function OrderDetailPage() {
   const shippingAddr = order.shipping_address;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/admin/orders"
-            className="p-2 rounded-lg hover:bg-white border border-border transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-charcoal" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-charcoal">
-              Order #{order.order_number}
-            </h1>
-            <p className="text-muted text-sm mt-0.5">
-              {new Date(order.created_at).toLocaleDateString("en-GB", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <PageHeader
+        title={`Order #${order.order_number}`}
+        subtitle={new Date(order.created_at).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+        breadcrumbs={[
+          { label: "Orders", href: "/admin/orders" },
+          { label: `#${order.order_number}` },
+        ]}
+      />
 
-      {/* Message */}
-      {message && (
-        <div
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium ${
-            message.type === "success"
-              ? "bg-green-50 text-green-700 border border-green-200"
-              : "bg-red-50 text-red-600 border border-red-200"
-          }`}
-        >
-          {message.type === "success" ? (
-            <Check className="w-4 h-4 shrink-0" />
-          ) : (
-            <AlertCircle className="w-4 h-4 shrink-0" />
-          )}
-          {message.text}
-        </div>
-      )}
-
-      {/* Status and info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Status cards */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {/* Order status */}
-        <div className="bg-white rounded-xl border border-border p-5 space-y-4">
-          <h3 className="text-sm font-semibold text-charcoal uppercase tracking-wide">
+        <div className="space-y-4 rounded-xl border border-border bg-white p-5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
             Order Status
           </h3>
-          <div className="flex items-center gap-2">
+          <div>
             <OrderStatusBadge status={order.status} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted mb-1.5">
+            <label className="mb-1.5 block text-xs font-medium text-muted">
               Update Status
             </label>
             <select
               value={order.status}
               onChange={(e) => handleStatusUpdate(e.target.value)}
               disabled={updating}
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand bg-white disabled:opacity-50"
+              className={selectStyles + " disabled:opacity-50"}
             >
               {ORDER_STATUSES.map((s) => (
                 <option key={s} value={s}>
@@ -306,12 +258,12 @@ export default function OrderDetailPage() {
             <button
               onClick={handleSendShippingEmail}
               disabled={sendingEmail}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand hover:bg-brand-hover text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-hover transition-colors disabled:opacity-50"
             >
               {sendingEmail ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Send className="w-4 h-4" />
+                <Send className="h-4 w-4" />
               )}
               Send Shipping Email
             </button>
@@ -319,22 +271,22 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Payment status */}
-        <div className="bg-white rounded-xl border border-border p-5 space-y-4">
-          <h3 className="text-sm font-semibold text-charcoal uppercase tracking-wide">
+        <div className="space-y-4 rounded-xl border border-border bg-white p-5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
             Payment
           </h3>
-          <div className="flex items-center gap-2">
+          <div>
             <PaymentStatusBadge status={order.payment_status} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted mb-1.5">
+            <label className="mb-1.5 block text-xs font-medium text-muted">
               Update Payment Status
             </label>
             <select
               value={order.payment_status}
               onChange={(e) => handlePaymentStatusUpdate(e.target.value)}
               disabled={updating}
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand bg-white disabled:opacity-50"
+              className={selectStyles + " disabled:opacity-50"}
             >
               {PAYMENT_STATUSES.map((s) => (
                 <option key={s} value={s}>
@@ -344,13 +296,13 @@ export default function OrderDetailPage() {
             </select>
           </div>
           {order.revolut_order_id && (
-            <div className="pt-2 border-t border-border">
+            <div className="border-t border-border pt-3">
               <div className="flex items-center gap-2 text-xs text-muted">
-                <CreditCard className="w-3.5 h-3.5 shrink-0" />
-                <span>Revolut: {order.revolut_order_id}</span>
+                <CreditCard className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">Revolut: {order.revolut_order_id}</span>
               </div>
               {order.paid_at && (
-                <p className="text-xs text-muted mt-1">
+                <p className="mt-1 text-xs text-muted">
                   Paid:{" "}
                   {new Date(order.paid_at).toLocaleDateString("en-GB", {
                     day: "numeric",
@@ -366,18 +318,18 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Customer info */}
-        <div className="bg-white rounded-xl border border-border p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-charcoal uppercase tracking-wide">
+        <div className="space-y-3 rounded-xl border border-border bg-white p-5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
             Customer
           </h3>
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2 text-charcoal">
-              <Mail className="w-4 h-4 text-muted shrink-0" />
+              <Mail className="h-4 w-4 shrink-0 text-muted" />
               <span className="truncate">{order.customer_email}</span>
             </div>
             {order.customer_phone && (
               <div className="flex items-center gap-2 text-charcoal">
-                <Phone className="w-4 h-4 text-muted shrink-0" />
+                <Phone className="h-4 w-4 shrink-0 text-muted" />
                 {order.customer_phone}
               </div>
             )}
@@ -386,64 +338,70 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Order items */}
-      <div className="bg-white rounded-xl border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-charcoal">Order Items</h2>
+      <div className="overflow-hidden rounded-xl border border-border bg-white">
+        <div className="border-b border-border px-6 py-4">
+          <h2 className="text-base font-semibold text-charcoal">
+            Order Items
+          </h2>
         </div>
         {items.length === 0 ? (
-          <div className="px-6 py-12 text-center text-muted">
+          <div className="px-6 py-12 text-center text-sm text-muted">
             No items in this order.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left bg-surface/50">
-                  <th className="px-6 py-3 font-medium text-muted w-12"></th>
-                  <th className="px-6 py-3 font-medium text-muted">Item</th>
-                  <th className="px-6 py-3 font-medium text-muted">SKU</th>
-                  <th className="px-6 py-3 font-medium text-muted text-right">
+                <tr className="border-b border-border bg-surface/30">
+                  <th className="w-12 px-5 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-muted" />
+                  <th className="px-5 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">
+                    Item
+                  </th>
+                  <th className="px-5 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">
+                    SKU
+                  </th>
+                  <th className="px-5 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-muted">
                     Price
                   </th>
-                  <th className="px-6 py-3 font-medium text-muted text-center">
+                  <th className="px-5 py-2.5 text-center text-xs font-semibold uppercase tracking-wider text-muted">
                     Qty
                   </th>
-                  <th className="px-6 py-3 font-medium text-muted text-right">
+                  <th className="px-5 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-muted">
                     Total
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="px-6 py-3">
-                      <div className="w-10 h-10 rounded-lg border border-border overflow-hidden bg-surface flex items-center justify-center">
+                  <tr key={item.id} className="transition-colors hover:bg-surface/30">
+                    <td className="px-5 py-3">
+                      <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-border bg-surface">
                         {item.image_url ? (
                           <Image
                             src={item.image_url}
                             alt={item.title}
                             width={40}
                             height={40}
-                            className="w-10 h-10 object-cover"
+                            className="h-10 w-10 object-cover"
                           />
                         ) : (
-                          <Package className="w-5 h-5 text-muted" />
+                          <Package className="h-5 w-5 text-muted" />
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-3 font-medium text-charcoal">
+                    <td className="px-5 py-3 font-medium text-charcoal">
                       {item.title}
                     </td>
-                    <td className="px-6 py-3 text-muted font-mono text-xs">
-                      {item.sku ?? "-"}
+                    <td className="px-5 py-3 font-mono text-xs text-muted">
+                      {item.sku ?? "—"}
                     </td>
-                    <td className="px-6 py-3 text-right text-charcoal">
+                    <td className="px-5 py-3 text-right text-charcoal">
                       {formatPrice(item.price)}
                     </td>
-                    <td className="px-6 py-3 text-center text-charcoal">
+                    <td className="px-5 py-3 text-center text-charcoal">
                       {item.quantity}
                     </td>
-                    <td className="px-6 py-3 text-right font-medium text-charcoal">
+                    <td className="px-5 py-3 text-right font-medium text-charcoal">
                       {formatPrice(item.price * item.quantity)}
                     </td>
                   </tr>
@@ -454,11 +412,11 @@ export default function OrderDetailPage() {
         )}
       </div>
 
-      {/* Summary and shipping */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Summary + Shipping */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Order summary */}
-        <div className="bg-white rounded-xl border border-border p-6 space-y-4">
-          <h3 className="text-lg font-semibold text-charcoal">
+        <div className="space-y-4 rounded-xl border border-border bg-white p-6">
+          <h3 className="text-base font-semibold text-charcoal">
             Order Summary
           </h3>
           <div className="space-y-2 text-sm">
@@ -476,9 +434,9 @@ export default function OrderDetailPage() {
                   : "Free"}
               </span>
             </div>
-            <div className="border-t border-border pt-2 flex justify-between">
+            <div className="flex justify-between border-t border-border pt-2">
               <span className="font-semibold text-charcoal">Total</span>
-              <span className="font-bold text-charcoal text-lg">
+              <span className="text-lg font-bold text-charcoal">
                 {formatPrice(order.total)}
               </span>
             </div>
@@ -486,13 +444,13 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Shipping address */}
-        <div className="bg-white rounded-xl border border-border p-6 space-y-4">
-          <h3 className="text-lg font-semibold text-charcoal">
+        <div className="space-y-4 rounded-xl border border-border bg-white p-6">
+          <h3 className="text-base font-semibold text-charcoal">
             Shipping Address
           </h3>
           {shippingAddr ? (
             <div className="flex items-start gap-3 text-sm text-charcoal">
-              <MapPin className="w-4 h-4 text-muted mt-0.5 shrink-0" />
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted" />
               <div className="space-y-0.5">
                 {shippingAddr.name && (
                   <p className="font-medium">{shippingAddr.name}</p>
@@ -506,65 +464,29 @@ export default function OrderDetailPage() {
                 </p>
                 {shippingAddr.country && <p>{shippingAddr.country}</p>}
                 {shippingAddr.phone && (
-                  <p className="text-muted mt-1">{shippingAddr.phone}</p>
+                  <p className="mt-1 text-muted">{shippingAddr.phone}</p>
                 )}
               </div>
             </div>
           ) : (
-            <p className="text-sm text-muted">No shipping address provided.</p>
+            <p className="text-sm text-muted">
+              No shipping address provided.
+            </p>
           )}
         </div>
       </div>
 
       {/* Notes */}
       {order.notes && (
-        <div className="bg-white rounded-xl border border-border p-6 space-y-3">
-          <h3 className="text-lg font-semibold text-charcoal">
+        <div className="space-y-3 rounded-xl border border-border bg-white p-6">
+          <h3 className="text-base font-semibold text-charcoal">
             Order Notes
           </h3>
-          <p className="text-sm text-charcoal whitespace-pre-wrap">
+          <p className="whitespace-pre-wrap text-sm text-charcoal">
             {order.notes}
           </p>
         </div>
       )}
     </div>
-  );
-}
-
-function OrderStatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    confirmed: "bg-blue-50 text-blue-700 border-blue-200",
-    shipped: "bg-orange-50 text-orange-700 border-orange-200",
-    delivered: "bg-green-50 text-green-700 border-green-200",
-    cancelled: "bg-red-50 text-red-700 border-red-200",
-  };
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-        styles[status] ?? "bg-gray-50 text-gray-700 border-gray-200"
-      }`}
-    >
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
-  );
-}
-
-function PaymentStatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    paid: "bg-green-50 text-green-700 border-green-200",
-    completed: "bg-green-50 text-green-700 border-green-200",
-    refunded: "bg-red-50 text-red-700 border-red-200",
-    failed: "bg-red-50 text-red-700 border-red-200",
-  };
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-        styles[status] ?? "bg-gray-50 text-gray-700 border-gray-200"
-      }`}
-    >
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
   );
 }

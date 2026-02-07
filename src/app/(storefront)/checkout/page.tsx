@@ -53,7 +53,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     setMounted(true);
 
-    // Pre-fill email if user is logged in
+    // Pre-fill from profile if user is logged in
     async function prefillUser() {
       try {
         const supabase = createClient();
@@ -62,6 +62,24 @@ export default function CheckoutPage() {
         } = await supabase.auth.getUser();
         if (user?.email) {
           setEmail(user.email);
+
+          // Fetch saved profile data for address pre-fill
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select(
+              "full_name, phone, address_line1, address_line2, city, postal_code, country"
+            )
+            .eq("id", user.id)
+            .single();
+
+          if (profile) {
+            if (profile.full_name) setName(profile.full_name);
+            if (profile.phone) setPhone(profile.phone);
+            if (profile.address_line1) setLine1(profile.address_line1);
+            if (profile.address_line2) setLine2(profile.address_line2);
+            if (profile.city) setCity(profile.city);
+            if (profile.postal_code) setPostalCode(profile.postal_code);
+          }
         }
       } catch {
         // Silently fail - user may not be logged in

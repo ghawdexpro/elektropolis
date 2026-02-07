@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "./EmptyState";
+import { SkeletonTable } from "./Skeleton";
 import type { LucideIcon } from "lucide-react";
 
 type Alignment = "left" | "center" | "right";
@@ -55,11 +55,11 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   if (loading) {
     return (
-      <div className={cn("rounded-xl border border-border bg-white", className)}>
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-5 w-5 animate-spin text-muted" />
-        </div>
-      </div>
+      <SkeletonTable
+        rows={6}
+        columns={columns.length}
+        className={className}
+      />
     );
   }
 

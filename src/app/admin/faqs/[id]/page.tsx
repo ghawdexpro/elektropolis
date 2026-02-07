@@ -9,6 +9,7 @@ import { FormField, inputStyles, selectStyles } from "@/components/admin/ui/Form
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { Modal, ModalCancelButton, ModalConfirmButton } from "@/components/admin/ui/Modal";
 import { useToast } from "@/components/admin/ui/Toast";
+import { SkeletonFormPage } from "@/components/admin/ui/Skeleton";
 
 const DEFAULT_CATEGORIES = [
   "Delivery & Shipping",
@@ -105,11 +106,7 @@ export default function EditFAQPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-muted" />
-      </div>
-    );
+    return <SkeletonFormPage />;
   }
 
   if (notFound) {

@@ -13,6 +13,7 @@ import {
   CreditCard,
   Send,
 } from "lucide-react";
+import { SkeletonDetailPage } from "@/components/admin/ui/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/utils";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
@@ -178,11 +179,7 @@ export default function OrderDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-muted" />
-      </div>
-    );
+    return <SkeletonDetailPage />;
   }
 
   if (!order) {

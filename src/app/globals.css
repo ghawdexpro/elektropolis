@@ -98,6 +98,64 @@ body {
   animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Admin panel animations — Level 3.0 */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 88, 13, 0); }
+  50% { box-shadow: 0 0 0 4px rgba(255, 88, 13, 0.15); }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-border) 50%, var(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Staggered children animation */
+.animate-stagger > * {
+  opacity: 0;
+  animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.animate-stagger > *:nth-child(2) { animation-delay: 60ms; }
+.animate-stagger > *:nth-child(3) { animation-delay: 120ms; }
+.animate-stagger > *:nth-child(4) { animation-delay: 180ms; }
+.animate-stagger > *:nth-child(5) { animation-delay: 240ms; }
+.animate-stagger > *:nth-child(6) { animation-delay: 300ms; }
+.animate-stagger > *:nth-child(7) { animation-delay: 360ms; }
+.animate-stagger > *:nth-child(8) { animation-delay: 420ms; }
+.animate-stagger > *:nth-child(9) { animation-delay: 480ms; }
+.animate-stagger > *:nth-child(10) { animation-delay: 540ms; }
+.animate-stagger > *:nth-child(11) { animation-delay: 600ms; }
+.animate-stagger > *:nth-child(12) { animation-delay: 660ms; }
+
 /* Product description styling */
 .product-description h1,
 .product-description h2,

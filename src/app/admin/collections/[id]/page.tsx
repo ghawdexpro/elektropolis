@@ -19,6 +19,7 @@ import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { Modal, ModalCancelButton, ModalConfirmButton } from "@/components/admin/ui/Modal";
 import { useToast } from "@/components/admin/ui/Toast";
 import { cn } from "@/lib/utils";
+import { SkeletonFormPage } from "@/components/admin/ui/Skeleton";
 
 interface AssignedProduct {
   product_id: string;
@@ -217,11 +218,7 @@ export default function CollectionEditPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-muted" />
-      </div>
-    );
+    return <SkeletonFormPage />;
   }
 
   if (notFound) {

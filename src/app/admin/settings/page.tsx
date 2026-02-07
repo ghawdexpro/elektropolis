@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { FormField, inputStyles } from "@/components/admin/ui/FormField";
 import { useToast } from "@/components/admin/ui/Toast";
+import { SkeletonFormPage } from "@/components/admin/ui/Skeleton";
 
 interface Settings {
   store_name: string;
@@ -71,11 +72,7 @@ export default function SettingsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-muted" />
-      </div>
-    );
+    return <SkeletonFormPage />;
   }
 
   return (

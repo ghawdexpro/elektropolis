@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { SkeletonFormPage } from "@/components/admin/ui/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import ProductForm, {
   type ProductFormData,
@@ -64,11 +65,7 @@ export default function ProductEditPage() {
   }, [productId]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-muted" />
-      </div>
-    );
+    return <SkeletonFormPage />;
   }
 
   if (notFound) {

@@ -116,7 +116,7 @@ export default async function AdminDashboard() {
     .slice(0, 5);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in-up">
       <PageHeader
         title="Dashboard"
         subtitle="Overview of your store performance"
@@ -142,7 +142,7 @@ export default async function AdminDashboard() {
       />
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 animate-stagger">
         <StatCard
           label="Products"
           value={totalProducts.toLocaleString()}

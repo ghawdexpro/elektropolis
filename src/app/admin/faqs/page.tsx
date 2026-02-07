@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Loader2, HelpCircle, Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
+import { SkeletonCard } from "@/components/admin/ui/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { EmptyState } from "@/components/admin/ui/EmptyState";
@@ -88,8 +89,10 @@ export default function FAQsPage() {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-muted" />
+        <div className="space-y-4 animate-stagger">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} lines={3} />
+          ))}
         </div>
       ) : faqs.length === 0 ? (
         <div className="rounded-xl border border-border bg-white">

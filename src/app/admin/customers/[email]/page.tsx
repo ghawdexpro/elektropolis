@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2, Mail, Phone, ShoppingBag, DollarSign } from "lucide-react";
+import { SkeletonStatCard, SkeletonTable } from "@/components/admin/ui/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/utils";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
@@ -62,8 +63,13 @@ export default function CustomerDetailPage() {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-muted" />
+        <div className="space-y-6 animate-stagger">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonStatCard key={i} />
+            ))}
+          </div>
+          <SkeletonTable rows={5} columns={5} />
         </div>
       ) : (
         <>

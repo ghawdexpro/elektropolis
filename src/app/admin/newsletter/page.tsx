@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Loader2, Mail, Download, Search, X } from "lucide-react";
+import { SkeletonTable } from "@/components/admin/ui/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { Badge } from "@/components/admin/ui/Badge";
@@ -154,9 +155,7 @@ export default function NewsletterPage() {
       {/* Subscribers table */}
       <div className="overflow-hidden rounded-xl border border-border bg-white">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-muted" />
-          </div>
+          <SkeletonTable rows={6} columns={4} />
         ) : subscribers.length === 0 ? (
           <EmptyState
             icon={Mail}

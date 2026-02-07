@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { Sparkline } from "@/components/admin/dashboard/Sparkline";
 
 interface StatCardProps {
   label: string;
@@ -12,6 +13,8 @@ interface StatCardProps {
     direction: "up" | "down" | "neutral";
     label?: string;
   };
+  sparklineData?: number[];
+  sparklineColor?: string;
   className?: string;
 }
 
@@ -21,6 +24,8 @@ export function StatCard({
   icon: Icon,
   iconColor = "text-brand bg-brand-light",
   trend,
+  sparklineData,
+  sparklineColor,
   className,
 }: StatCardProps) {
   return (
@@ -62,13 +67,18 @@ export function StatCard({
           )}
         </div>
 
-        <div
-          className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-105",
-            iconColor
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <div
+            className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-105",
+              iconColor
+            )}
+          >
+            <Icon className="h-5 w-5" />
+          </div>
+          {sparklineData && sparklineData.length >= 2 && (
+            <Sparkline data={sparklineData} color={sparklineColor} />
           )}
-        >
-          <Icon className="h-5 w-5" />
         </div>
       </div>
     </div>

@@ -20,6 +20,15 @@ import {
   PaymentStatusBadge,
   Badge,
 } from "@/components/admin/ui/Badge";
+import { RevenueChart } from "@/components/admin/dashboard/RevenueChart";
+import { OrderStatusChart } from "@/components/admin/dashboard/OrderStatusChart";
+import { ActivityFeed } from "@/components/admin/dashboard/ActivityFeed";
+import {
+  loadDashboardChartData,
+  loadOrderStatusDistribution,
+  loadDashboardActivity,
+  loadDashboardSparklines,
+} from "./actions";
 
 export const metadata = { title: "Dashboard" };
 
@@ -36,6 +45,10 @@ export default async function AdminDashboard() {
     recentOrdersRes,
     lowStockProductsRes,
     topProductsRes,
+    chartData,
+    statusDistribution,
+    activityItems,
+    sparklines,
   ] = await Promise.all([
     supabase
       .from("products")
@@ -80,6 +93,10 @@ export default async function AdminDashboard() {
       .select("title, quantity, price, product_id")
       .order("quantity", { ascending: false })
       .limit(20),
+    loadDashboardChartData(90),
+    loadOrderStatusDistribution(),
+    loadDashboardActivity(),
+    loadDashboardSparklines(),
   ]);
 
   const totalProducts = productsRes.count ?? 0;
@@ -154,12 +171,15 @@ export default async function AdminDashboard() {
           value={totalOrders.toLocaleString()}
           icon={ShoppingCart}
           iconColor="text-emerald-600 bg-emerald-50"
+          sparklineData={sparklines.orders}
+          sparklineColor="#059669"
         />
         <StatCard
           label="Revenue"
           value={formatPrice(totalRevenue)}
           icon={DollarSign}
           iconColor="text-brand bg-brand-light"
+          sparklineData={sparklines.revenue}
         />
         <StatCard
           label="Low Stock"
@@ -186,10 +206,20 @@ export default async function AdminDashboard() {
           value={subscriberCount.toLocaleString()}
           icon={Mail}
           iconColor="text-violet-600 bg-violet-50"
+          sparklineData={sparklines.subscribers}
+          sparklineColor="#7C3AED"
         />
       </div>
 
-      {/* Main content grid */}
+      {/* Charts row */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <RevenueChart data={chartData} />
+        </div>
+        <OrderStatusChart data={statusDistribution} />
+      </div>
+
+      {/* Main content grid: Orders + Activity */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Orders — spans 2 columns */}
         <div className="lg:col-span-2">
@@ -278,85 +308,88 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
-        {/* Right column */}
-        <div className="space-y-6">
-          {/* Top Products */}
-          <div className="rounded-xl border border-border bg-white">
-            <div className="border-b border-border px-5 py-4">
-              <h3 className="text-base font-semibold text-charcoal flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-brand" />
-                Top Products
-              </h3>
-            </div>
-            {topProducts.length === 0 ? (
-              <div className="px-5 py-10 text-center text-sm text-muted">
-                No sales data yet.
-              </div>
-            ) : (
-              <div className="divide-y divide-border">
-                {topProducts.map((product, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between px-5 py-3"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-charcoal">
-                        {product.title}
-                      </p>
-                      <p className="text-xs text-muted">
-                        {product.totalQty} sold
-                      </p>
-                    </div>
-                    <span className="ml-3 shrink-0 text-sm font-semibold text-charcoal">
-                      {formatPrice(product.totalRev)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Activity Feed */}
+        <ActivityFeed items={activityItems} />
+      </div>
 
-          {/* Low Stock Alerts */}
-          <div className="rounded-xl border border-border bg-white">
-            <div className="border-b border-border px-5 py-4">
-              <h3 className="text-base font-semibold text-charcoal flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-500" />
-                Low Stock Alerts
-              </h3>
-            </div>
-            {lowStockProducts.length === 0 ? (
-              <div className="px-5 py-10 text-center text-sm text-muted">
-                All products are well stocked.
-              </div>
-            ) : (
-              <div className="divide-y divide-border">
-                {lowStockProducts.map((product) => (
-                  <Link
-                    key={product.id}
-                    href={`/admin/products/${product.id}`}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-surface/30 transition-colors"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-charcoal">
-                        {product.title}
-                      </p>
-                      <p className="text-xs text-muted">{product.vendor}</p>
-                    </div>
-                    <Badge
-                      variant={product.inventory_count <= 0 ? "error" : "warning"}
-                      label={
-                        product.inventory_count <= 0
-                          ? "Out of stock"
-                          : `${product.inventory_count} left`
-                      }
-                      dot={false}
-                      size="sm"
-                    />
-                  </Link>
-                ))}
-              </div>
-            )}
+      {/* Bottom row: Top Products + Low Stock */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Top Products */}
+        <div className="rounded-xl border border-border bg-white">
+          <div className="border-b border-border px-5 py-4">
+            <h3 className="text-base font-semibold text-charcoal flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-brand" />
+              Top Products
+            </h3>
           </div>
+          {topProducts.length === 0 ? (
+            <div className="px-5 py-10 text-center text-sm text-muted">
+              No sales data yet.
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {topProducts.map((product, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-5 py-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-charcoal">
+                      {product.title}
+                    </p>
+                    <p className="text-xs text-muted">
+                      {product.totalQty} sold
+                    </p>
+                  </div>
+                  <span className="ml-3 shrink-0 text-sm font-semibold text-charcoal">
+                    {formatPrice(product.totalRev)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Low Stock Alerts */}
+        <div className="rounded-xl border border-border bg-white">
+          <div className="border-b border-border px-5 py-4">
+            <h3 className="text-base font-semibold text-charcoal flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+              Low Stock Alerts
+            </h3>
+          </div>
+          {lowStockProducts.length === 0 ? (
+            <div className="px-5 py-10 text-center text-sm text-muted">
+              All products are well stocked.
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {lowStockProducts.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/admin/products/${product.id}`}
+                  className="flex items-center justify-between px-5 py-3 hover:bg-surface/30 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-charcoal">
+                      {product.title}
+                    </p>
+                    <p className="text-xs text-muted">{product.vendor}</p>
+                  </div>
+                  <Badge
+                    variant={product.inventory_count <= 0 ? "error" : "warning"}
+                    label={
+                      product.inventory_count <= 0
+                        ? "Out of stock"
+                        : `${product.inventory_count} left`
+                    }
+                    dot={false}
+                    size="sm"
+                  />
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

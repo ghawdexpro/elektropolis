@@ -11,6 +11,7 @@ import {
 import { BulkActionBar } from "@/components/admin/ui/BulkActionBar";
 import InfiniteScroll from "@/components/shared/InfiniteScroll";
 import { loadAdminOrders, type AdminOrder } from "@/app/admin/actions";
+import { downloadCSV } from "@/lib/csv-export";
 
 interface Props {
   initialOrders: AdminOrder[];
@@ -144,23 +145,18 @@ export default function AdminOrdersTable({
 
   const handleExportSelected = () => {
     const selected = orders.filter((o) => selectedIds.has(o.id));
-    const headers = ["Order", "Date", "Customer", "Status", "Payment", "Total"];
-    const rows = selected.map((o) => [
-      o.order_number,
-      new Date(o.created_at).toLocaleDateString("en-GB"),
-      o.customer_email,
-      o.status,
-      o.payment_status,
-      o.total.toString(),
-    ]);
-    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `orders-export-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCSV(
+      `orders-export-${new Date().toISOString().slice(0, 10)}.csv`,
+      ["Order", "Date", "Customer", "Status", "Payment", "Total"],
+      selected.map((o) => [
+        o.order_number,
+        new Date(o.created_at).toLocaleDateString("en-GB"),
+        o.customer_email,
+        o.status,
+        o.payment_status,
+        o.total.toString(),
+      ])
+    );
   };
 
   return (
@@ -193,6 +189,7 @@ export default function AdminOrdersTable({
               {sorted.map((order) => (
                 <tr
                   key={order.id}
+                  data-order-id={order.id}
                   className={cn(
                     "group transition-colors hover:bg-surface/30",
                     selectedIds.has(order.id) && "bg-brand/[0.04]"

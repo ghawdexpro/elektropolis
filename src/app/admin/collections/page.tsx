@@ -1,15 +1,9 @@
 import Link from "next/link";
-import Image from "next/image";
-import {
-  FolderOpen,
-  ExternalLink,
-  Plus,
-  Pencil,
-} from "lucide-react";
+import { FolderOpen, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { EmptyState } from "@/components/admin/ui/EmptyState";
-import { Badge } from "@/components/admin/ui/Badge";
+import { SortableCollectionList } from "@/components/admin/SortableCollectionList";
 
 export const metadata = { title: "Collections" };
 
@@ -73,75 +67,10 @@ export default async function AdminCollectionsPage() {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {collections.map((collection) => {
-            const productCount = collectionProductCounts[collection.id] ?? 0;
-            return (
-              <div
-                key={collection.id}
-                className="group overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-sm"
-              >
-                {/* Image */}
-                <div className="relative aspect-[16/9] bg-surface">
-                  {collection.image_url ? (
-                    <Image
-                      src={collection.image_url}
-                      alt={collection.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <FolderOpen className="h-10 w-10 text-muted" />
-                    </div>
-                  )}
-                  <div className="absolute right-3 top-3">
-                    <Badge
-                      variant={collection.is_visible ? "visible" : "hidden"}
-                      size="sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="space-y-2 p-4">
-                  <h3 className="font-semibold text-charcoal">
-                    {collection.title}
-                  </h3>
-                  {collection.description && (
-                    <p className="line-clamp-2 text-sm text-muted">
-                      {collection.description}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-xs text-muted">
-                      {productCount}{" "}
-                      {productCount === 1 ? "product" : "products"}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/admin/collections/${collection.id}`}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-charcoal hover:text-brand transition-colors"
-                      >
-                        <Pencil className="h-3 w-3" />
-                        Edit
-                      </Link>
-                      <Link
-                        href={`/collections/${collection.handle}`}
-                        target="_blank"
-                        className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:text-brand-hover"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        View
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <SortableCollectionList
+          collections={collections}
+          productCounts={collectionProductCounts}
+        />
       )}
     </div>
   );

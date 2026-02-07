@@ -9,6 +9,7 @@ import { ProductStatusBadge, Badge } from "@/components/admin/ui/Badge";
 import { BulkActionBar } from "@/components/admin/ui/BulkActionBar";
 import InfiniteScroll from "@/components/shared/InfiniteScroll";
 import { loadAdminProducts, type AdminProduct } from "@/app/admin/actions";
+import { downloadCSV } from "@/lib/csv-export";
 
 interface Props {
   initialProducts: AdminProduct[];
@@ -133,22 +134,17 @@ export default function AdminProductsTable({
 
   const handleExportSelected = () => {
     const selected = products.filter((p) => selectedIds.has(p.id));
-    const headers = ["Title", "Vendor", "Price", "Stock", "Status"];
-    const rows = selected.map((p) => [
-      `"${p.title.replace(/"/g, '""')}"`,
-      p.vendor ?? "",
-      p.price.toString(),
-      p.inventory_count.toString(),
-      p.status,
-    ]);
-    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `products-export-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCSV(
+      `products-export-${new Date().toISOString().slice(0, 10)}.csv`,
+      ["Title", "Vendor", "Price", "Stock", "Status"],
+      selected.map((p) => [
+        p.title,
+        p.vendor ?? "",
+        p.price.toString(),
+        p.inventory_count.toString(),
+        p.status,
+      ])
+    );
   };
 
   return (

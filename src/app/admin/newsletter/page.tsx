@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, Mail, Download, Search, X } from "lucide-react";
+import { Mail, Download, Search, X } from "lucide-react";
 import { SkeletonTable } from "@/components/admin/ui/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { Badge } from "@/components/admin/ui/Badge";
 import { EmptyState } from "@/components/admin/ui/EmptyState";
 import { useToast } from "@/components/admin/ui/Toast";
+import { downloadCSV } from "@/lib/csv-export";
 
 interface Subscriber {
   id: string;
@@ -73,21 +74,15 @@ export default function NewsletterPage() {
     const activeSubscribers = subscribers.filter(
       (s) => s.status === "active"
     );
-    const csv = [
-      "Email,Status,Subscribed At",
-      ...activeSubscribers.map(
-        (s) =>
-          `${s.email},${s.status},${new Date(s.subscribed_at).toISOString()}`
-      ),
-    ].join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `newsletter-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCSV(
+      `newsletter-subscribers-${new Date().toISOString().slice(0, 10)}.csv`,
+      ["Email", "Status", "Subscribed At"],
+      activeSubscribers.map((s) => [
+        s.email,
+        s.status,
+        new Date(s.subscribed_at).toISOString(),
+      ])
+    );
     toast({
       type: "success",
       message: `Exported ${activeSubscribers.length} subscribers.`,

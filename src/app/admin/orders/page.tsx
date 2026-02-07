@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { EmptyState } from "@/components/admin/ui/EmptyState";
 import OrdersFilter from "./OrdersFilter";
 import AdminOrdersTable from "@/components/admin/AdminOrdersTable";
+import { RealtimeOrdersWrapper } from "@/components/admin/RealtimeOrdersWrapper";
 import type { AdminOrder } from "@/app/admin/actions";
 
 const PER_PAGE = 50;
@@ -81,14 +82,16 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
             }
           />
         ) : (
-          <AdminOrdersTable
-            key={`${sp.q}-${sp.status}-${sp.payment}`}
-            initialOrders={initialOrders}
-            totalCount={totalCount}
-            q={sp.q}
-            status={sp.status}
-            payment={sp.payment}
-          />
+          <RealtimeOrdersWrapper>
+            <AdminOrdersTable
+              key={`${sp.q}-${sp.status}-${sp.payment}`}
+              initialOrders={initialOrders}
+              totalCount={totalCount}
+              q={sp.q}
+              status={sp.status}
+              payment={sp.payment}
+            />
+          </RealtimeOrdersWrapper>
         )}
       </div>
     </div>

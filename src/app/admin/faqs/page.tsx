@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Loader2, HelpCircle, Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
+import { HelpCircle, Plus } from "lucide-react";
 import { SkeletonCard } from "@/components/admin/ui/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { EmptyState } from "@/components/admin/ui/EmptyState";
-import { Badge } from "@/components/admin/ui/Badge";
 import { useToast } from "@/components/admin/ui/Toast";
+import { SortableFAQList } from "@/components/admin/SortableFAQList";
 
 interface FAQ {
   id: string;
@@ -65,13 +65,6 @@ export default function FAQsPage() {
     }
   };
 
-  // Group FAQs by category
-  const grouped = faqs.reduce<Record<string, FAQ[]>>((acc, faq) => {
-    if (!acc[faq.category]) acc[faq.category] = [];
-    acc[faq.category].push(faq);
-    return acc;
-  }, {});
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -104,64 +97,11 @@ export default function FAQsPage() {
           />
         </div>
       ) : (
-        Object.entries(grouped).map(([category, categoryFaqs]) => (
-          <div
-            key={category}
-            className="overflow-hidden rounded-xl border border-border bg-card"
-          >
-            <div className="border-b border-border bg-surface/30 px-5 py-3">
-              <h3 className="text-sm font-semibold text-charcoal">
-                {category}
-              </h3>
-            </div>
-            <div className="divide-y divide-border">
-              {categoryFaqs.map((faq) => (
-                <div
-                  key={faq.id}
-                  className="flex items-start justify-between gap-4 px-5 py-4"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-charcoal">
-                      {faq.question}
-                    </p>
-                    <p className="mt-1 line-clamp-2 text-sm text-muted">
-                      {faq.answer}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Badge
-                      variant={faq.is_visible ? "visible" : "hidden"}
-                      size="sm"
-                    />
-                    <button
-                      onClick={() => handleToggleVisibility(faq)}
-                      className="rounded-lg p-1.5 text-muted hover:bg-surface hover:text-charcoal transition-colors"
-                      title={faq.is_visible ? "Hide" : "Show"}
-                    >
-                      {faq.is_visible ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                    <Link
-                      href={`/admin/faqs/${faq.id}`}
-                      className="rounded-lg p-1.5 text-muted hover:bg-surface hover:text-charcoal transition-colors"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(faq)}
-                      className="rounded-lg p-1.5 text-muted hover:bg-red-50 hover:text-red-600 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))
+        <SortableFAQList
+          initialFaqs={faqs}
+          onDelete={handleDelete}
+          onToggleVisibility={handleToggleVisibility}
+        />
       )}
     </div>
   );

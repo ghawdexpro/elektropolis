@@ -50,9 +50,10 @@ export default async function ProductPage({ params }: Props) {
     .select(
       `
       id, title, handle, body_html, vendor, price, compare_at_price,
-      inventory_count, sku, product_type, tags, currency,
+      inventory_count, sku, product_type, tags, currency, specifications,
       product_images (id, url, alt_text, width, height, position, is_primary),
-      product_variants (id, title, price, compare_at_price, inventory_count, option1_name, option1_value, option2_name, option2_value, sku)
+      product_variants (id, title, price, compare_at_price, inventory_count, option1_name, option1_value, option2_name, option2_value, sku),
+      product_documents (id, url, title, type, position)
     `
     )
     .eq("handle", handle)
@@ -77,6 +78,13 @@ export default async function ProductPage({ params }: Props) {
       ? { "@type": "Brand", name: product.vendor }
       : undefined,
     sku: product.sku,
+    additionalProperty: (product.specifications as { key: string; value: string }[] | null)?.map(
+      (spec: { key: string; value: string }) => ({
+        "@type": "PropertyValue",
+        name: spec.key,
+        value: spec.value,
+      })
+    ),
     offers: {
       "@type": "Offer",
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/products/${product.handle}`,
@@ -205,6 +213,10 @@ export default async function ProductPage({ params }: Props) {
             })
           ),
           variants: product.product_variants || [],
+          specifications: (product.specifications as { key: string; value: string }[] | null) || [],
+          documents: ((product.product_documents || []) as { id: string; url: string; title: string; type: string; position: number }[]).sort(
+            (a, b) => a.position - b.position
+          ),
         }}
       />
 

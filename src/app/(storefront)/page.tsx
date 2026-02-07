@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import ProductCard from "@/components/storefront/ProductCard";
 import {
@@ -7,50 +8,47 @@ import {
   Store,
   BadgePercent,
   Headset,
-  ChefHat,
-  WashingMachine,
-  Wind,
-  Refrigerator,
-  Droplets,
-  Sparkles,
 } from "lucide-react";
+
+const SUPABASE_STORAGE =
+  "https://fgikvllfbtetzwkzwxqg.supabase.co/storage/v1/object/public/site-assets/category-banners";
 
 const FEATURED_CATEGORIES = [
   {
     title: "Kitchen Sinks",
     handle: "kitchen-sinks",
-    icon: Droplets,
     description: "Premium sinks from top European brands",
+    image: `${SUPABASE_STORAGE}/kitchen-sinks.png`,
   },
   {
     title: "Sink Mixers",
     handle: "sink-mixers",
-    icon: Sparkles,
     description: "Designer taps and mixer faucets",
+    image: `${SUPABASE_STORAGE}/sink-mixers.png`,
   },
   {
     title: "Cooker Hoods",
     handle: "chimney-cooker-hoods",
-    icon: ChefHat,
     description: "Powerful extraction for every kitchen",
+    image: `${SUPABASE_STORAGE}/cooker-hoods.png`,
   },
   {
     title: "Washing Machines",
     handle: "freestanding-washing-machines",
-    icon: WashingMachine,
     description: "Energy-efficient laundry solutions",
+    image: `${SUPABASE_STORAGE}/washing-machines.png`,
   },
   {
     title: "Air Treatment",
     handle: "air-treatment",
-    icon: Wind,
     description: "Air conditioners and dehumidifiers",
+    image: `${SUPABASE_STORAGE}/air-treatment.png`,
   },
   {
     title: "Refrigeration",
     handle: "freestanding-fridge-freezers",
-    icon: Refrigerator,
     description: "Fridge freezers for every space",
+    image: `${SUPABASE_STORAGE}/refrigeration.png`,
   },
 ];
 
@@ -249,33 +247,38 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
-          {FEATURED_CATEGORIES.map((cat, i) => {
-            const Icon = cat.icon;
-            return (
-              <Link
-                key={cat.handle}
-                href={`/collections/${cat.handle}`}
-                className="group relative bg-surface hover:bg-brand-light border border-border hover:border-brand/20 rounded-xl p-6 md:p-8 transition-all duration-300"
-                style={{
-                  animationDelay: `${i * 80}ms`,
-                }}
-              >
-                <div className="w-11 h-11 rounded-lg bg-white flex items-center justify-center mb-4 group-hover:bg-brand/10 transition-colors shadow-sm">
-                  <Icon
-                    className="w-5 h-5 text-charcoal group-hover:text-brand transition-colors"
-                    strokeWidth={1.5}
-                  />
-                </div>
-                <h3 className="text-[16px] font-semibold text-charcoal mb-1 group-hover:text-brand transition-colors">
+          {FEATURED_CATEGORIES.map((cat) => (
+            <Link
+              key={cat.handle}
+              href={`/collections/${cat.handle}`}
+              className="group relative aspect-[4/3] rounded-xl overflow-hidden"
+            >
+              <Image
+                src={cat.image}
+                alt={cat.title}
+                fill
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              {/* Hover accent line */}
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-brand scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+              {/* Content */}
+              <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-6">
+                <h3 className="text-[17px] md:text-[19px] font-bold text-white mb-0.5 drop-shadow-md">
                   {cat.title}
                 </h3>
-                <p className="text-[13px] text-muted leading-relaxed">
+                <p className="text-[12px] md:text-[13px] text-white/70 leading-relaxed drop-shadow-sm">
                   {cat.description}
                 </p>
-                <ArrowRight className="absolute top-6 right-6 w-4 h-4 text-muted opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" strokeWidth={2} />
-              </Link>
-            );
-          })}
+                <div className="flex items-center gap-1.5 mt-2.5 text-[12px] font-semibold text-brand opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                  Shop now
+                  <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 

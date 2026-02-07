@@ -10,7 +10,6 @@ import {
   Mail,
   ArrowUpRight,
   TrendingUp,
-  Eye,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/utils";

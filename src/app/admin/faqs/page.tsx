@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Loader2, HelpCircle, Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -24,21 +24,17 @@ export default function FAQsPage() {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadFAQs = useCallback(async () => {
-    setLoading(true);
-    const { data } = await supabase
-      .from("faqs")
+  useEffect(() => {
+    const s = createClient();
+    s.from("faqs")
       .select("*")
       .order("category")
-      .order("position");
-
-    setFaqs((data as FAQ[]) ?? []);
-    setLoading(false);
-  }, [supabase]);
-
-  useEffect(() => {
-    loadFAQs();
-  }, [loadFAQs]);
+      .order("position")
+      .then(({ data }) => {
+        setFaqs((data as FAQ[]) ?? []);
+        setLoading(false);
+      });
+  }, []);
 
   const handleDelete = async (faq: FAQ) => {
     const { error } = await supabase.from("faqs").delete().eq("id", faq.id);

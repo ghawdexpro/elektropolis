@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, Mail, Download, Search, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
@@ -22,9 +22,10 @@ export default function NewsletterPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  const loadSubscribers = useCallback(async () => {
+  const loadSubscribers = async () => {
     setLoading(true);
-    let query = supabase
+    const s = createClient();
+    let query = s
       .from("newsletter_subscribers")
       .select("*")
       .order("subscribed_at", { ascending: false });
@@ -36,11 +37,12 @@ export default function NewsletterPage() {
     const { data } = await query;
     setSubscribers((data as Subscriber[]) ?? []);
     setLoading(false);
-  }, [supabase, search]);
+  };
 
   useEffect(() => {
     loadSubscribers();
-  }, [loadSubscribers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleToggleStatus = async (subscriber: Subscriber) => {
     const newStatus =

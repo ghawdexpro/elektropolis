@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import slugify from "slugify";
@@ -58,52 +58,48 @@ export default function CollectionEditPage() {
   const [searchResults, setSearchResults] = useState<AssignedProduct[]>([]);
   const [searching, setSearching] = useState(false);
 
-  const loadCollection = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("collections")
+  useEffect(() => {
+    const s = createClient();
+    s.from("collections")
       .select("*")
       .eq("id", collectionId)
-      .single();
+      .single()
+      .then(async ({ data, error }) => {
+        if (error || !data) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
 
-    if (error || !data) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
+        setTitle(data.title ?? "");
+        setHandle(data.handle ?? "");
+        setDescription(data.description ?? "");
+        setImageUrl(data.image_url ?? "");
+        setIsVisible(data.is_visible ?? true);
+        setSortOrder(data.sort_order?.toString() ?? "0");
+        setSeoTitle(data.seo_title ?? "");
+        setSeoDescription(data.seo_description ?? "");
 
-    setTitle(data.title ?? "");
-    setHandle(data.handle ?? "");
-    setDescription(data.description ?? "");
-    setImageUrl(data.image_url ?? "");
-    setIsVisible(data.is_visible ?? true);
-    setSortOrder(data.sort_order?.toString() ?? "0");
-    setSeoTitle(data.seo_title ?? "");
-    setSeoDescription(data.seo_description ?? "");
+        // Load assigned products
+        const { data: junctionData } = await s
+          .from("product_collections")
+          .select("product_id, products(title, vendor, status)")
+          .eq("collection_id", collectionId)
+          .order("position");
 
-    // Load assigned products
-    const { data: junctionData } = await supabase
-      .from("product_collections")
-      .select("product_id, products(title, vendor, status)")
-      .eq("collection_id", collectionId)
-      .order("position");
-
-    const products: AssignedProduct[] = (junctionData ?? []).map((row) => {
-      const p = row.products as unknown as { title: string; vendor: string | null; status: string };
-      return {
-        product_id: row.product_id,
-        title: p?.title ?? "Unknown",
-        vendor: p?.vendor ?? null,
-        status: p?.status ?? "draft",
-      };
-    });
-    setAssignedProducts(products);
-    setLoading(false);
-  }, [collectionId, supabase]);
-
-  useEffect(() => {
-    loadCollection();
-  }, [loadCollection]);
+        const products: AssignedProduct[] = (junctionData ?? []).map((row) => {
+          const p = row.products as unknown as { title: string; vendor: string | null; status: string };
+          return {
+            product_id: row.product_id,
+            title: p?.title ?? "Unknown",
+            vendor: p?.vendor ?? null,
+            status: p?.status ?? "draft",
+          };
+        });
+        setAssignedProducts(products);
+        setLoading(false);
+      });
+  }, [collectionId]);
 
   const handleTitleChange = (val: string) => {
     setTitle(val);

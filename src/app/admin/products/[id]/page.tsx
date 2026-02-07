@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -26,45 +26,42 @@ export default function ProductEditPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  const loadProduct = useCallback(async () => {
+  useEffect(() => {
     const supabase = createClient();
-    const { data, error } = await supabase
+    supabase
       .from("products")
       .select("*, product_images(*)")
       .eq("id", productId)
-      .single();
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
 
-    if (error || !data) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
+        setFormData({
+          title: data.title ?? "",
+          handle: data.handle ?? "",
+          body_html: data.body_html ?? "",
+          vendor: data.vendor ?? "",
+          product_type: data.product_type ?? "",
+          price: data.price?.toString() ?? "",
+          compare_at_price: data.compare_at_price?.toString() ?? "",
+          sku: data.sku ?? "",
+          inventory_count: data.inventory_count?.toString() ?? "0",
+          tags: Array.isArray(data.tags) ? data.tags.join(", ") : "",
+          status: data.status ?? "draft",
+          currency: data.currency ?? "EUR",
+          seo_title: data.seo_title ?? "",
+          seo_description: data.seo_description ?? "",
+        });
 
-    setFormData({
-      title: data.title ?? "",
-      handle: data.handle ?? "",
-      body_html: data.body_html ?? "",
-      vendor: data.vendor ?? "",
-      product_type: data.product_type ?? "",
-      price: data.price?.toString() ?? "",
-      compare_at_price: data.compare_at_price?.toString() ?? "",
-      sku: data.sku ?? "",
-      inventory_count: data.inventory_count?.toString() ?? "0",
-      tags: Array.isArray(data.tags) ? data.tags.join(", ") : "",
-      status: data.status ?? "draft",
-      currency: data.currency ?? "EUR",
-      seo_title: data.seo_title ?? "",
-      seo_description: data.seo_description ?? "",
-    });
-
-    const imgs = (data.product_images ?? []) as ProductImage[];
-    setImages(imgs.sort((a, b) => a.position - b.position));
-    setLoading(false);
+        const imgs = (data.product_images ?? []) as ProductImage[];
+        setImages(imgs.sort((a, b) => a.position - b.position));
+        setLoading(false);
+      });
   }, [productId]);
-
-  useEffect(() => {
-    loadProduct();
-  }, [loadProduct]);
 
   if (loading) {
     return (

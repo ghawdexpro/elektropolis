@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { formatPrice } from "@/lib/utils";
 
 const ADMIN_PER_PAGE = 50;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Save, Loader2, Trash2 } from "lucide-react";
@@ -37,31 +37,27 @@ export default function EditFAQPage() {
   const [position, setPosition] = useState("0");
   const [isVisible, setIsVisible] = useState(true);
 
-  const loadFAQ = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("faqs")
+  useEffect(() => {
+    const s = createClient();
+    s.from("faqs")
       .select("*")
       .eq("id", faqId)
-      .single();
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
 
-    if (error || !data) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
-
-    setCategory(data.category ?? "");
-    setQuestion(data.question ?? "");
-    setAnswer(data.answer ?? "");
-    setPosition(data.position?.toString() ?? "0");
-    setIsVisible(data.is_visible ?? true);
-    setLoading(false);
-  }, [faqId, supabase]);
-
-  useEffect(() => {
-    loadFAQ();
-  }, [loadFAQ]);
+        setCategory(data.category ?? "");
+        setQuestion(data.question ?? "");
+        setAnswer(data.answer ?? "");
+        setPosition(data.position?.toString() ?? "0");
+        setIsVisible(data.is_visible ?? true);
+        setLoading(false);
+      });
+  }, [faqId]);
 
   const handleSave = async () => {
     if (!question.trim()) {

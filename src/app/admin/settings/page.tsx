@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, Save } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
@@ -30,28 +30,24 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const loadSettings = useCallback(async () => {
-    setLoading(true);
-    const { data } = await supabase
-      .from("store_settings")
-      .select("key, value");
-
-    if (data) {
-      const merged = { ...defaultSettings };
-      for (const row of data) {
-        const key = row.key as keyof Settings;
-        if (key in merged) {
-          merged[key] = (row.value as { v: string })?.v ?? String(row.value) ?? "";
-        }
-      }
-      setSettings(merged);
-    }
-    setLoading(false);
-  }, [supabase]);
-
   useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
+    const s = createClient();
+    s.from("store_settings")
+      .select("key, value")
+      .then(({ data }) => {
+        if (data) {
+          const merged = { ...defaultSettings };
+          for (const row of data) {
+            const key = row.key as keyof Settings;
+            if (key in merged) {
+              merged[key] = (row.value as { v: string })?.v ?? String(row.value) ?? "";
+            }
+          }
+          setSettings(merged);
+        }
+        setLoading(false);
+      });
+  }, []);
 
   const handleChange = (key: keyof Settings, value: string) => {
     setSettings((prev) => ({ ...prev, [key]: value }));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -85,31 +85,22 @@ export default function OrderDetailPage() {
 
   const supabase = createClient();
 
-  const loadOrder = useCallback(async () => {
-    setLoading(true);
-    const [orderRes, itemsRes] = await Promise.all([
-      supabase.from("orders").select("*").eq("id", orderId).single(),
-      supabase
-        .from("order_items")
-        .select("*")
-        .eq("order_id", orderId)
-        .order("id"),
-    ]);
-
-    if (orderRes.error || !orderRes.data) {
-      toast({ type: "error", message: "Order not found." });
-      setLoading(false);
-      return;
-    }
-
-    setOrder(orderRes.data as Order);
-    setItems((itemsRes.data as OrderItem[]) ?? []);
-    setLoading(false);
-  }, [orderId, supabase, toast]);
-
   useEffect(() => {
-    loadOrder();
-  }, [loadOrder]);
+    Promise.all([
+      supabase.from("orders").select("*").eq("id", orderId).single(),
+      supabase.from("order_items").select("*").eq("order_id", orderId).order("id"),
+    ]).then(([orderRes, itemsRes]) => {
+      if (orderRes.error || !orderRes.data) {
+        toast({ type: "error", message: "Order not found." });
+        setLoading(false);
+        return;
+      }
+      setOrder(orderRes.data as Order);
+      setItems((itemsRes.data as OrderItem[]) ?? []);
+      setLoading(false);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId]);
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!order) return;

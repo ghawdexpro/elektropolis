@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import slugify from "slugify";
-import { Save, Loader2, Trash2, ArrowLeft } from "lucide-react";
+import { Save, Loader2, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { FormField, inputStyles, selectStyles } from "@/components/admin/ui/FormField";
 import { ImageUpload } from "@/components/admin/ui/ImageUpload";

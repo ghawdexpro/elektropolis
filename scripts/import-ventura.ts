@@ -1,10 +1,11 @@
 /**
- * Ventura Malta → ElektroPolis Import Script
+ * Ventura Malta + Deante → ElektroPolis Import Script
  *
  * Reads scraped product data from the outlet-system's JSON and imports
- * into ElektroPolis's Supabase database (brands, collections, products, images).
+ * into ElektroPolis's Supabase database (brands, collections, products, images, specs, docs).
  *
- * Usage: npx tsx scripts/import-ventura.ts
+ * Usage: npx tsx scripts/import-ventura.ts           # Ventura only (630 products)
+ *        npx tsx scripts/import-ventura.ts --all     # Ventura + Deante (3739 products)
  */
 
 import { config } from "dotenv";
@@ -97,6 +98,8 @@ const CATEGORY_DISPLAY: Record<string, string> = {
   "kitchen-sinks": "Kitchen Sinks",
   "taps": "Taps & Mixers",
   "small-appliances": "Small Appliances",
+  "bathroom-fixtures": "Bathroom Fixtures",
+  "accessories": "Accessories",
 };
 
 // Map detected category → ElektroPolis collection handle
@@ -120,6 +123,8 @@ const CATEGORY_TO_COLLECTION: Record<string, string> = {
   "microwave-ovens": "microwave-ovens",
   "small-appliances": "small-appliances",
   "brown-goods": "brown-goods",
+  "bathroom-fixtures": "bathroom-fixtures",
+  "accessories": "accessories",
 };
 
 // New collections to create (handle → title)
@@ -136,9 +141,16 @@ const NEW_COLLECTIONS: Record<string, string> = {
   "microwave-ovens": "Microwave Ovens",
   "small-appliances": "Small Appliances",
   "brown-goods": "Brown Goods",
+  "bathroom-fixtures": "Bathroom Fixtures",
+  "accessories": "Accessories",
 };
 
-function categorizeProduct(name: string): { slug: string; display: string } {
+function categorizeProduct(name: string, existingCategory?: string): { slug: string; display: string } {
+  // If already categorized with a known category (e.g. Deante products), use it
+  if (existingCategory && existingCategory !== "All" && CATEGORY_DISPLAY[existingCategory]) {
+    return { slug: existingCategory, display: CATEGORY_DISPLAY[existingCategory] };
+  }
+
   const nameLower = name.toLowerCase();
   for (const [slug, patterns] of Object.entries(CATEGORY_PATTERNS)) {
     for (const pattern of patterns) {
@@ -376,6 +388,8 @@ async function importProducts(
   let imported = 0;
   let imageCount = 0;
   let collectionLinks = 0;
+  let docCount = 0;
+  let specCount = 0;
   let errors = 0;
 
   console.log(`\nImporting ${products.length} products...`);
@@ -386,7 +400,7 @@ async function importProducts(
     try {
       const brand = extractBrand(raw);
       const brandId = brandMap.get(brand) || null;
-      const { slug: categorySlug, display: categoryDisplay } = categorizeProduct(raw.name);
+      const { slug: categorySlug, display: categoryDisplay } = categorizeProduct(raw.name, raw.category);
       const collectionHandle = CATEGORY_TO_COLLECTION[categorySlug] || "small-appliances";
       const collectionId = collectionMap.get(collectionHandle);
 
@@ -399,6 +413,12 @@ async function importProducts(
 
       const tags = ["ventura", categorySlug];
       if (brand !== "Ventura") tags.push(slugify(brand));
+
+      // Clean specifications
+      const specs =
+        raw.specifications && raw.specifications.length > 0
+          ? raw.specifications.map((s) => ({ key: s.key, value: s.value }))
+          : [];
 
       // Upsert product
       const { data: productData, error: productError } = await supabase
@@ -424,6 +444,7 @@ async function importProducts(
               : 0,
             requires_shipping: true,
             seo_description: seoDesc,
+            specifications: specs,
           },
           { onConflict: "handle" }
         )
@@ -473,6 +494,24 @@ async function importProducts(
         if (!linkError) collectionLinks++;
       }
 
+      // Insert documents (PDFs, manuals, spec sheets)
+      if (raw.documents && raw.documents.length > 0) {
+        for (let k = 0; k < raw.documents.length; k++) {
+          const doc = raw.documents[k];
+          const docType = (["pdf", "manual", "spec", "other"].includes(doc.type) ? doc.type : "pdf") as string;
+          const { error: docError } = await supabase.from("product_documents").insert({
+            product_id: productId,
+            url: doc.url,
+            title: doc.title,
+            type: docType,
+            position: k + 1,
+          });
+          if (!docError) docCount++;
+        }
+      }
+
+      if (specs.length > 0) specCount++;
+
       imported++;
       if ((i + 1) % 50 === 0 || i === products.length - 1) {
         console.log(`  Progress: ${i + 1}/${products.length} (${imported} imported, ${errors} errors)`);
@@ -483,19 +522,25 @@ async function importProducts(
     }
   }
 
-  return { imported, imageCount, collectionLinks, errors };
+  return { imported, imageCount, collectionLinks, docCount, specCount, errors };
 }
 
 // ─── Main ────────────────────────────────────────────────────────
 
 async function main() {
+  const useAll = process.argv.includes("--all");
+
   console.log("═══════════════════════════════════════════════");
-  console.log("  ElektroPolis: Ventura Malta Product Import");
+  console.log(useAll
+    ? "  ElektroPolis: Full Product Import (Ventura + Deante)"
+    : "  ElektroPolis: Ventura Malta Product Import"
+  );
   console.log("═══════════════════════════════════════════════\n");
 
   // Load products JSON
-  const jsonPath = join(__dirname, "ventura-products.json");
-  console.log(`Reading products from ${jsonPath}...`);
+  const jsonFile = useAll ? "ventura-products-all.json" : "ventura-products.json";
+  const jsonPath = join(__dirname, jsonFile);
+  console.log(`Reading products from ${jsonFile}...`);
   const rawData: RawProduct[] = JSON.parse(readFileSync(jsonPath, "utf-8"));
   console.log(`Loaded ${rawData.length} products`);
 
@@ -529,15 +574,22 @@ async function main() {
     .from("product_images")
     .select("*", { count: "exact", head: true });
 
+  const { count: docTotal } = await supabase
+    .from("product_documents")
+    .select("*", { count: "exact", head: true });
+
   console.log(`  Products imported: ${result.imported}`);
   console.log(`  Images inserted:   ${result.imageCount}`);
   console.log(`  Collection links:  ${result.collectionLinks}`);
+  console.log(`  Specs added:       ${result.specCount} products`);
+  console.log(`  Documents added:   ${result.docCount}`);
   console.log(`  Errors:            ${result.errors}`);
   console.log();
   console.log(`  Total brands:      ${brandCount}`);
   console.log(`  Total collections: ${collectionCount}`);
   console.log(`  Total products:    ${productCount}`);
   console.log(`  Total images:      ${imgCount}`);
+  console.log(`  Total documents:   ${docTotal}`);
   console.log("\n  Done!\n");
 }
 

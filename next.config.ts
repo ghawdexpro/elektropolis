@@ -18,6 +18,16 @@ const nextConfig: NextConfig = {
         hostname: "cdn.1avant.com",
         pathname: "/ventura-operations/**",
       },
+      {
+        protocol: "https",
+        hostname: "pc21.deante.pl",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "www.edesa.com",
+        pathname: "/**",
+      },
     ],
   },
   output: "standalone",

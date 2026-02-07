@@ -37,6 +37,13 @@ export const NAV_CATEGORIES = [
     ],
   },
   {
+    title: "Bathroom",
+    items: [
+      { name: "Bathroom Fixtures", handle: "bathroom-fixtures" },
+      { name: "Accessories", handle: "accessories" },
+    ],
+  },
+  {
     title: "Cooking",
     items: [
       { name: "Cooker Hoods", handle: "chimney-cooker-hoods" },

@@ -46,3 +46,4 @@ next-env.d.ts
 
 # import data
 scripts/ventura-products.json
+scripts/ventura-products-all.json

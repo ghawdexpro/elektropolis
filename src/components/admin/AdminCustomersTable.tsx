@@ -1,15 +1,58 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { Mail, Phone, ShoppingBag } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { Mail, Phone, ShoppingBag, ArrowUp, ArrowDown } from "lucide-react";
+import { cn, formatPrice } from "@/lib/utils";
 import InfiniteScroll from "@/components/shared/InfiniteScroll";
 import { loadAdminCustomers, type AdminCustomer } from "@/app/admin/actions";
 
 interface Props {
   initialCustomers: AdminCustomer[];
   totalCount: number;
+}
+
+type SortKey = "email" | "orderCount" | "totalSpent" | "lastOrder";
+type SortDir = "asc" | "desc";
+
+function SortHeader({
+  label,
+  sortKey,
+  currentSort,
+  currentDir,
+  onSort,
+  align = "left",
+}: {
+  label: string;
+  sortKey: SortKey;
+  currentSort: SortKey | null;
+  currentDir: SortDir;
+  onSort: (key: SortKey) => void;
+  align?: "left" | "right" | "center";
+}) {
+  const isActive = currentSort === sortKey;
+  return (
+    <th
+      className={cn(
+        "px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted cursor-pointer select-none hover:text-charcoal transition-colors",
+        align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"
+      )}
+      onClick={() => onSort(sortKey)}
+    >
+      <span className={cn(
+        "inline-flex items-center gap-1",
+        align === "right" && "justify-end",
+        align === "center" && "justify-center"
+      )}>
+        {label}
+        {isActive && (
+          currentDir === "asc"
+            ? <ArrowUp className="h-3 w-3 text-brand" />
+            : <ArrowDown className="h-3 w-3 text-brand" />
+        )}
+      </span>
+    </th>
+  );
 }
 
 export default function AdminCustomersTable({
@@ -19,6 +62,8 @@ export default function AdminCustomersTable({
   const [customers, setCustomers] = useState(initialCustomers);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialCustomers.length < totalCount);
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const handleLoadMore = useCallback(async () => {
     const nextPage = currentPage + 1;
@@ -35,31 +80,49 @@ export default function AdminCustomersTable({
     setHasMore(result.hasMore);
   }, [currentPage]);
 
+  const handleSort = useCallback((key: SortKey) => {
+    setSortKey((prev) => {
+      if (prev === key) {
+        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+        return key;
+      }
+      setSortDir("asc");
+      return key;
+    });
+  }, []);
+
+  const sorted = useMemo(() => {
+    if (!sortKey) return customers;
+    return [...customers].sort((a, b) => {
+      const aVal = a[sortKey] ?? "";
+      const bVal = b[sortKey] ?? "";
+      let cmp: number;
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        cmp = aVal - bVal;
+      } else {
+        cmp = String(aVal).localeCompare(String(bVal));
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [customers, sortKey, sortDir]);
+
   return (
     <InfiniteScroll hasMore={hasMore} loadMore={handleLoadMore}>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-surface/30">
-              <th className="px-5 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">
-                Customer
-              </th>
+              <SortHeader label="Customer" sortKey="email" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
               <th className="px-5 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">
                 Contact
               </th>
-              <th className="px-5 py-2.5 text-center text-xs font-semibold uppercase tracking-wider text-muted">
-                Orders
-              </th>
-              <th className="px-5 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-muted">
-                Total Spent
-              </th>
-              <th className="px-5 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">
-                Last Order
-              </th>
+              <SortHeader label="Orders" sortKey="orderCount" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} align="center" />
+              <SortHeader label="Total Spent" sortKey="totalSpent" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} align="right" />
+              <SortHeader label="Last Order" sortKey="lastOrder" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {customers.map((customer) => (
+            {sorted.map((customer) => (
               <tr
                 key={customer.email}
                 className="group transition-colors hover:bg-surface/30"

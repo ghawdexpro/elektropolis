@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   Zap,
+  Search,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -104,6 +105,24 @@ export default function AdminSidebar() {
             </span>
           </div>
         </Link>
+      </div>
+
+      {/* Search shortcut */}
+      <div className="px-3 pt-3 pb-1">
+        <button
+          onClick={() => {
+            document.dispatchEvent(
+              new KeyboardEvent("keydown", { key: "k", metaKey: true })
+            );
+          }}
+          className="flex w-full items-center gap-2.5 rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[13px] text-white/40 transition-all duration-150 hover:border-white/[0.12] hover:bg-white/[0.06] hover:text-white/60"
+        >
+          <Search className="h-3.5 w-3.5 shrink-0" />
+          <span className="flex-1 text-left">Search...</span>
+          <kbd className="rounded border border-white/10 bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-medium">
+            ⌘K
+          </kbd>
+        </button>
       </div>
 
       {/* Navigation groups */}

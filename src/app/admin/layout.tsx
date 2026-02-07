@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { ToastProvider } from "@/components/admin/ui/Toast";
+import { CommandPalette } from "@/components/admin/CommandPalette";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export default function AdminLayout({
     <ToastProvider>
       <div className="min-h-screen bg-surface">
         <AdminSidebar />
+        <CommandPalette />
         <div className="lg:pl-60">
           <main className="p-4 pt-16 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
             {children}
